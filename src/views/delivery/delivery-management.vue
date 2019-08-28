@@ -16,22 +16,30 @@
       </i-col>
     </row>
     <br>
-    <row>
-      <i-col span="1">
-        <i-button type="primary" @click="addServiceProvider">新增</i-button>
+    <row :gutter="16" type="flex">
+      <i-col span="2">
+        <i-button type="primary" class="buttonPadding" @click="addServiceProvider">新&nbsp;&nbsp;&nbsp;&nbsp;增</i-button>
       </i-col>
-      <i-col span="1">
-        <i-button type="info" @click="printBarcode">打印条码</i-button>
+      <i-col span="2"  >
+        <i-button type="info" class="buttonPadding" @click="printBarcode">打印条码</i-button>
       </i-col>
-      <i-col span="2" style="padding-left: 25px">
-        <i-button type="warning" @click="printDeliveryNote">打印送货单</i-button>
+      <i-col span="2" >
+        <i-button type="warning" class="buttonPadding"  @click="printDeliveryNote">
+          打印送货单
+        </i-button>
       </i-col>
-      <i-col span="21">&nbsp;</i-col>
+      <i-col span="2" v-if="isSyncShow">
+        <i-button type="success" class="buttonPadding" @click="synchronizationMES" :disabled="isSyncFlag">同步MES</i-button>
+      </i-col>
+      <i-col span="2" >
+        <i-button type="error" class="buttonPadding" @click="deleteAllGoods">条码作废</i-button>
+      </i-col>
+      <i-col span="14">&nbsp;</i-col>
     </row>
     <br>
     <row>
       <i-table border :height="tableHeight" @on-select-all="selectUnit" @on-select-cancel="selectUnit"
-               @on-select="selectUnit" @on-select-all-cancel="selectUnit"
+               @on-select="selectUnit" @on-select-all-cancel="selectUnit" :row-class-name="rowClassName"
                :columns="columns" :data="serviceProviders"></i-table>
     </row>
     <row>
@@ -152,7 +160,9 @@
         <i-button @click="retrievalDeliverySingle = false">关闭</i-button>
       </div>
     </Modal>
-
+    <div style="position : absolute;top: 3%;left: 38%;color: #ff3660;width: 450px;font-size: 20px" v-if="isSyncShow == false">
+      注意：送货单打印只能按照单个送货单进行打印。被作废的打印条码，不能作为送货条码，进行送货，否则我们有权拒收。请勿重复使用条码。
+    </div>
 
   </div>
 </template>
@@ -171,6 +181,8 @@
     data() {
       return {
         // <--------------------          基础变量          -------------------->
+        isSyncFlag: true,
+        isSyncShow: true,
         clickBj: false,
         addTotalList: {
           "info": [],
@@ -223,6 +235,7 @@
         deliveryIsChecked: false,
         preservationDisabled: true,
         tableHeight: '',
+        tableHeight2: '',
         retrievalTableHeight: '',
         title: '',
         subsectionNumber: '',
@@ -249,6 +262,11 @@
           {
             title: '送货单位',
             key: 'company_name',
+            align: 'center'
+          },
+          {
+            title: '同步',
+            key: 'is_sync_name',
             align: 'center'
           },
           {
@@ -748,6 +766,7 @@
         return
       } else {
         this.columns = parseInt(Cookies.get("company_type")) === 1 ? this.columns1 : this.columns2
+        this.isSyncShow = parseInt(Cookies.get("company_type")) === 1 ? true : false
         this.tableHeight = document.documentElement.clientHeight - 340
         this.tableHeight2 = document.documentElement.clientHeight - 390
         this.retrievalTableHeight = document.documentElement.clientHeight - 390
@@ -772,6 +791,7 @@
       //<--------------------          增删改查翻页          -------------------->
       //初始化页面
       initialiseIndex(page, isFlage) {
+        this.isSyncFlag = true
         if (isFlage) {
           Cookies.set("count", '')
           if (this.wuliu_sn) {
@@ -792,17 +812,42 @@
         }
 
         post('/index/Depot/getNewGoods', index).then((response) => {
+          let isFlages = true
           Cookies.set("isFlage", true)
           let list = []
           if (this.wuliu_sn) {
             for (let i = 0; i < response.data.length; i++) {
+              if (parseInt(response.data[i].is_sync) === 0) {
+                isFlages = false
+                response.data[i].is_sync_name = "未同步"
+              } else if (parseInt(response.data[i].is_sync) === 1) {
+                isFlages = false
+                response.data[i].is_sync_name = "同步失败"
+              } else {
+                response.data[i].is_sync_name = parseInt(response.data[i].is_del) === 0 ? "同步成功" : "本单商品已注销"
+              }
+              response.data[i]._disabled = parseInt(response.data[i].is_del) === 0 ? false : true
               if (this.wuliu_sn == response.data[i].wuliu_sn) {
                 list.push(response.data[i])
               }
             }
           } else {
+            for (let i = 0; i < response.data.length; i++) {
+              if (parseInt(response.data[i].is_sync) === 0) {
+                isFlages = false
+                response.data[i].is_sync_name = "未同步"
+              } else if (parseInt(response.data[i].is_sync) === 1) {
+                isFlages = false
+                response.data[i].is_sync_name = "同步失败"
+              } else {
+                response.data[i].is_sync_name = parseInt(response.data[i].is_del) === 0 ? "同步成功" : "本单商品已注销"
+              }
+              response.data[i]._disabled = parseInt(response.data[i].is_del) === 0 ? false : true
+
+            }
             list = response.data
           }
+          this.isSyncFlag = isFlages
           this.serviceProviders = list
           if (isFlage) {
             if (this.wuliu_sn) {
@@ -915,11 +960,11 @@
             }
             listAll.info[i].song_total_qty = total
             listAll.info[i].song_total_num = listAll.info[i].data.length
-
-            if (parseFloat(total) + parseFloat(listAll.info[i].receiv_qty) > listAll.info[i].amount_qty * 1.05) {
+            let totalCount = parseFloat(total) + parseFloat(listAll.info[i].receiv_qty) +  parseFloat(listAll.info[i].deliver_qty)
+            if (totalCount > listAll.info[i].amount_qty * 1.2) {
               this.$Notice.error({
-                title: '送货数量',
-                desc: "型号" + listAll.info[i].goods_spec + " 本次送货数量超出订单数量"
+                title: '保存异常',
+                desc: "型号" + listAll.info[i].goods_spec + " 送货数量大于采购订单数量的限定超额，请更换采购订单或者请作废无法送货的送货条码。"
               });
               return
             }
@@ -930,28 +975,29 @@
             });
             return
           }
-          post('/index/Depot/outDepot', listAll).then((response) => {
-            if (response.length > 0) {
-              this.$Notice.success({
-                title: '保存送货单',
-                desc: this.addAlls.wuliu_sn + ' 送货单保存成功！',
-              });
-              this.preservationDisabled = false
-              this.deliveryColumns = this.deliveryColumns2
-              let tedayNum = parseInt(this.tedayNum - this.deliveryNote.length)
-              for (let i = 0; i < this.deliveryNote.length; i++) {
-                this.deliveryNote[i].rec_sn = Common.generationNumber(tedayNum)
-                tedayNum++;
-              }
-            } else {
-              this.$Notice.error({
-                title: '保存送货单',
-                desc: this.addAlls.wuliu_sn + ' 送货单保存失败！',
-              });
-            }
-          }, err => {
-            Common.errNotice(this, err, constant.distributorErrTitle)
-          })
+
+          // post('/index/Depot/outDepot', listAll).then((response) => {
+          //   if (parseInt(response.code) === 1) {
+          //     this.$Notice.success({
+          //       title: '保存送货单',
+          //       desc: this.addAlls.wuliu_sn + response.msg,
+          //     });
+          //     this.preservationDisabled = false
+          //     this.deliveryColumns = this.deliveryColumns2
+          //     let tedayNum = parseInt(this.tedayNum - this.deliveryNote.length)
+          //     for (let i = 0; i < this.deliveryNote.length; i++) {
+          //       this.deliveryNote[i].rec_sn = Common.generationNumber(tedayNum)
+          //       tedayNum++;
+          //     }
+          //   } else {
+          //     this.$Notice.error({
+          //       title: '保存送货单',
+          //       desc: this.addAlls.wuliu_sn + response.msg,
+          //     });
+          //   }
+          // }, err => {
+          //   Common.errNotice(this, err, constant.distributorErrTitle)
+          // })
         } else {
           this.$Notice.error({
             title: '商品单卷数量有误',
@@ -1012,6 +1058,10 @@
 
       },
       rowClassName(row) {
+        if (row.is_del === 1) {
+          //去世
+          return 'demo-table-info-row'
+        }
         return ''
       },
       //新增时清空页面
@@ -1066,7 +1116,6 @@
             title: '商品添加',
             desc: val.goods_name + '添加送货单成功！',
           });
-
         } else {
           this.$Modal.confirm({
             title: '确认生成',
@@ -1264,11 +1313,11 @@
           Common.clickPrint(this.allList)
         }
       },
-      newDate(){
-        var myDate =new Date()
-        let year =myDate.getFullYear()
-        let month = (myDate.getMonth() + 1 ) < 10 ? "0"+ (myDate.getMonth() + 1 ): (myDate.getMonth() + 1)
-        let day =myDate.getDate() < 10  ? "0"+(myDate.getDate()) :  myDate.getDate()
+      newDate() {
+        var myDate = new Date()
+        let year = myDate.getFullYear()
+        let month = (myDate.getMonth() + 1) < 10 ? "0" + (myDate.getMonth() + 1) : (myDate.getMonth() + 1)
+        let day = myDate.getDate() < 10 ? "0" + (myDate.getDate()) : myDate.getDate()
         let makeDate = year + month + day
         return makeDate
       },
@@ -1390,6 +1439,69 @@
           Common.fnPrint(list)
         }
       },
+      //同步MES
+      synchronizationMES() {
+        post('/index/SyncMes/handDeliverOrder').then((response) => {
+          if (parseInt(response.code) === 1) {
+            this.$Notice.success({
+              title: '同步MES',
+              desc: response.msg,
+            });
+            this.initialiseIndex(this.page - 1)
+          } else {
+            this.$Notice.error({
+              title: '同步MES',
+              desc: response.msg,
+            });
+          }
+        }, err => {
+          Common.errNotice(this, err, constant.distributorErrTitle)
+        })
+      },
+      //商品删除多选删除
+      deleteAllGoods() {
+        if (this.allList.length === 0) {
+          this.$Notice.error({
+            title: '删除订单',
+            desc: '请勾选要删除的订单',
+          });
+        } else {
+          //删除
+          this.$Modal.confirm({
+            title: '删除确认',
+            content: '确定删除选中商品吗？',
+            okText: '确定',
+            cancelText: '取消',
+            onOk: () => {
+              let rec_ids = ''
+              for (let i = 0; i < this.allList.length; i++) {
+                rec_ids += (this.allList[i].rec_id + ",")
+              }
+              rec_ids = rec_ids.substring(0, rec_ids.length - 1)
+              let params = {
+                rec_ids: rec_ids
+              }
+              post('/index/Depot/delRecsn', params).then((response) => {
+                if (parseInt(response.code) === 1) {
+                  this.$Notice.success({
+                    title: '删除操作',
+                    desc: response.msg,
+                  });
+                  this.initialiseIndex(this.page - 1)
+                } else {
+                  this.$Notice.error({
+                    title: '删除操作',
+                    desc: response.msg,
+                  });
+                }
+              }, err => {
+                Common.errNotice(this, err, constant.distributorErrTitle)
+              })
+            }
+          })
+        }
+
+      },
     }
   }
 </script>
@@ -1423,7 +1535,7 @@
   }
 
   .ivu-table .demo-table-info-row td {
-    background-color: #74ecff;
+    background-color: #D2D2D2;
     color: #fff;
   }
 
@@ -1445,6 +1557,10 @@
 
   .i-table-show > :first-child {
     font-size: 20px;
+  }
+
+  .buttonPadding{
+    width: 90px;text-align: center
   }
 
 </style>

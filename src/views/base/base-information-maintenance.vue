@@ -1,31 +1,28 @@
 <template>
   <div>
-    <br><br><br><br><br>
-    <br><br><br><br><br>
-    <row class="label-style-information"  style="margin-bottom: 20px;display:flex;font-size: 15px">
-      <i-col span="5"></i-col>
-      <i-col span="2" class="label">公司编号：</i-col>
-      <i-col span="3" >
+    <row :gutter="16"  class="i-table-show" style="margin-left: 280px;">
+      <i-col span="1"></i-col>
+      <i-col span="3" class="label">公司编号：</i-col>
+      <i-col span="4" >
         <label >{{company_sn}}</label>
       </i-col>
-      <i-col span="3"></i-col>
-      <i-col span="2" class="label">公司：</i-col>
-      <i-col span="3"  style="text-align: left">
+      <i-col span="2"></i-col>
+      <i-col span="3" class="label">公司：</i-col>
+      <i-col span="4"  style="text-align: left">
         <label>{{company_name}}</label>
       </i-col>
-      <i-col span="8"></i-col>
+      <i-col span="8">
+      </i-col>
     </row>
-    <br><br><br><br><br>
-    <br><br><br><br><br>
-    <row class="label-style-information"  style="margin-bottom: 20px;display:flex;font-size: 15px">
-      <i-col span="5"></i-col>
-      <i-col span="2" class="label">联系人：</i-col>
-      <i-col span="3" >
+    <row :gutter="16" class="i-table-show" style="margin-left: 280px" >
+      <i-col span="1"></i-col>
+      <i-col span="3" class="label">联系人：</i-col>
+      <i-col span="4" >
         <label >{{contacts}}</label>
       </i-col>
-      <i-col span="3"></i-col>
-      <i-col span="2" class="label">联系方式：</i-col>
-      <i-col span="3"  style="text-align: left">
+      <i-col span="2"></i-col>
+      <i-col span="3" class="label">联系方式：</i-col>
+      <i-col span="4"  style="text-align: left">
         <label>{{user_mobile}}</label>
       </i-col>
       <i-col span="8">
@@ -109,7 +106,7 @@
         this.$router.push('/')
         return
       } else {
-        this.tableHeight = document.documentElement.clientHeight - 300
+        // this.tableHeight = document.documentElement.clientHeight - 600
       }
     },
     methods: {
@@ -158,5 +155,11 @@
   }
   .label-style-information{
   ;font-weight: bold;font-size: 18px
+  }
+  .i-table-show  {
+    font-weight: bold;
+    font-size: 18px;
+    padding-top: 180px;
+    /*margin-top: 180px*/
   }
 </style>
