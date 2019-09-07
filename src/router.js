@@ -5,7 +5,6 @@ import MobileLogin from "@/views/mobiles/login";
 import Home from "@/views/home";
 // import Error404 from "@/views/error404";
 
-
 import Base from "@/views/base/base";
 import InformationMaintenance from "@/views/base/base-information-maintenance";
 import MachinePlatform from "@/views/base/base-machine-platform";
@@ -14,10 +13,9 @@ import Authorization from "@/views/base/base-authorization";
 import Mechanism from "@/views/base/base-mechanism";
 import Role from "@/views/base/base-role";
 
-
-
 import Order from "@/views/order-confirm/order";
 import OrderConfirm from "@/views/order-confirm/order-confirm";
+import Expand from "@/views/order-confirm/confirm-table-expand";
 import SupplierOrderConfirm from "@/views/order-confirm/supplier-order-confirm";
 
 import Production from "@/views/production/production";
@@ -119,3 +117,6 @@ export default new Router({
     }
   ]
 });
+
+
+

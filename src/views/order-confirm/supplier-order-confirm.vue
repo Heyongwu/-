@@ -3,13 +3,35 @@
     <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
       <i-col span="3" class="label">订单号编号：</i-col>
       <i-col span="4">
-        <i-input clearable v-model="order_sn" placeholder="请输入采购订单号"/>
+        <i-input v-model="order_sn" placeholder="请输入采购订单号"/>
       </i-col>
       <i-col span="3" class="label">单据日期：</i-col>
       <i-col span="4">
-        <DatePicker type="date" v-model="order_date" placeholder="请输入单据日期" style="width: 200px"></DatePicker>
+        <DatePicker type="daterange" v-model="order_date" placeholder="请输入单据日期" style="width: 200px"></DatePicker>
       </i-col>
-      <i-col span="3" class="label">&nbsp;</i-col>
+      <i-col span="3" class="label">确认状态：</i-col>
+      <i-col span="4">
+        <i-select clearable v-model="confirm_status">
+          <i-option v-for="item in confirm_statuss" :value="item.code" :key="item.code">{{ item.name }}
+          </i-option>
+        </i-select>
+      </i-col>
+      <i-col span="3">
+      </i-col>
+    </row>
+    <br>
+    <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
+      <i-col span="3" class="label">排产状态：</i-col>
+      <i-col span="4">
+        <i-select clearable  v-model="plan_status">
+          <i-option v-for="item in plan_statuss" :value="item.code" :key="item.code">{{ item.name }}
+          </i-option>
+        </i-select>
+      </i-col>
+      <i-col span="3" class="label"></i-col>
+      <i-col span="4">
+      </i-col>
+      <i-col span="3" class="label"></i-col>
       <i-col span="4">
       </i-col>
       <i-col span="3">
@@ -23,7 +45,6 @@
       </i-col>
     </row>
     <br>
-    <br>
     <row>
       <i-table border :height="tableHeight" :columns="columns" :data="serviceProviders"></i-table>
     </row>
@@ -32,7 +53,7 @@
         <Page :current="pageMax" :page-size="numMax" :total="totalMax" @on-change="pageChange" simple/>
       </i-col>
     </row>
-    <Modal :title=title fullscreen :mask-closable="false" v-model="configSingle" width=90 >
+    <Modal :title=title fullscreen :mask-closable="false" v-model="configSingle" width=90>
       <i-form :rules="checkRules" ref="refConfig" :model="orders_config_manage">
         <br>
         <row :gutter="16">
@@ -51,7 +72,7 @@
           <i-col span="1">&nbsp;</i-col>
           <i-col span="6">
             <form-item label="供应商：" prop="supplier">
-              <i-select v-model="orders_config_manage.supplier"
+              <i-select clearable v-model="orders_config_manage.supplier"
                         @on-change="jurisdictionMenurChange">
                 <i-option v-for="item in orders_config_manage.suppliers" :value="item.company_sn" :key="item.id">
                   {{ item.company_name }}
@@ -61,7 +82,7 @@
           </i-col>
           <i-col span="2">&nbsp;</i-col>
         </row>
-
+        <br>
         <row :gutter="16">
           <i-col span="2">&nbsp;</i-col>
           <i-col span="20">
@@ -95,9 +116,9 @@
     </Modal>
     <Modal :title=title :mask-closable="false" v-model="retrievalDeliverySingle" width=70>
       <i-form>
-        <row :gutter="16"  >
+        <row :gutter="16">
           <i-col span="11">
-            <i-input clearable v-model="goods_sn" placeholder="请输入商品编号或者商品名称或助记符"/>
+            <i-input   v-model="goods_sn" placeholder="请输入商品编号或者商品名称或助记符"/>
           </i-col>
           <i-col span="1" class="label">
             <i-button @click="searchGoods(0)">检索</i-button>
@@ -125,6 +146,10 @@
         <i-button @click="retrievalDeliverySingle = false">关闭</i-button>
       </div>
     </Modal>
+    <Spin fix v-show="spinShow">
+      <Icon type="load-c" size="30" class="demo-spin-icon-load"></Icon>
+      <div>检索中，请稍侯...</div>
+    </Spin>
   </div>
 </template>
 
@@ -141,7 +166,24 @@
     data() {
       return {
         // <--------------------          基础变量          -------------------->
+        confirm_status: '',
+        confirm_statuss: [{
+          "code": 1, "name": "未确认"
+        }, {
+          "code": 2, "name": "部分确认"
+        }, {
+          "code": 3, "name": "完成确认"
+        }],
+        plan_status: '',
+        plan_statuss: [{
+          "code": 1, "name": "未排产"
+        }, {
+          "code": 2, "name": "部分排产"
+        }, {
+          "code": 3, "name": "完成排产"
+        }],
         retrievalDeliverySingle: false,
+        spinShow: false,
         order_sn: '',
         retrievalDeliveryNote: [],
         retrievalTableHeight: '',
@@ -183,7 +225,7 @@
             title: '行号',
             key: 'order_id',
             align: 'center'
-          },    {
+          }, {
             title: '订单编号',
             key: 'order_sn',
             align: 'center'
@@ -214,7 +256,7 @@
               return h(TableExpand, {
                 props: {
                   row: params.row.order_id,
-                  type:2
+                  type: 2
                 }
               }, "查看")
             }
@@ -437,8 +479,8 @@
           supplier: [
             {required: true, message: '供应商为必选项。', trigger: 'blur'}
           ],
-          order_date:[
-            { required: true, type: 'date', message: '订单日期为必选项', trigger: 'change' }
+          order_date: [
+            {required: true, type: 'date', message: '订单日期为必选项', trigger: 'change'}
           ]
         }
       }
@@ -448,7 +490,7 @@
         this.$router.push('/')
         return
       } else {
-        this.tableHeight = document.documentElement.clientHeight - 350
+        this.tableHeight = document.documentElement.clientHeight - 395
         this.initialiseIndex(0)
       }
     },
@@ -456,18 +498,27 @@
       //<--------------------          增删改查翻页          -------------------->
       //初始化页面
       initialiseIndex(page) {
+        this.spinShow = true
         this.pageMax = page + 1
         let index = {
-        "num": this.numMax,
-        "page": page
+          "num": this.numMax,
+          "page": page
         }
-        if(this.order_sn){
+        if (this.order_sn) {
           index.order_sn = this.order_sn
         }
-        if(this.order_date){
-          index.order_date = Common.formatDate(this.order_date, "yyyy-MM-dd")
+        if (this.plan_status) {
+          index.is_plan = this.plan_status
         }
-        post('/index/Order/getOrder',index).then((response) => {
+        if (this.confirm_status) {
+          index.is_confirm = this.confirm_status
+        }
+        if (this.order_date != ',') {
+          index.start_date = Common.formatDate(this.order_date[0], "yyyy-MM-dd")
+          index.end_date = Common.formatDate(this.order_date[1], "yyyy-MM-dd")
+        }
+        post('/index/Order/getOrder', index).then((response) => {
+          this.spinShow = false
           this.totalMax = response.count
           this.serviceProviders = response.data
         }, err => {
@@ -548,8 +599,8 @@
       updateList() {
         let params = this.configNote
         for (let i = 0; i < params.length; i++) {
-          this.configNote[i].total_amount= params[i].amount_qty * params[i].taxprice
-          this.configNote[i].total_amount= this.configNote[i].total_amount.toFixed(2)
+          this.configNote[i].total_amount = params[i].amount_qty * params[i].taxprice
+          this.configNote[i].total_amount = this.configNote[i].total_amount.toFixed(2)
 
         }
       },
@@ -604,18 +655,18 @@
         params.company_sn = this.orders_config_manage.company_sn
         params.company_name = this.orders_config_manage.company_name
         params.info = this.configNote
-        if(params.info.length === 0){
+        if (params.info.length === 0) {
           this.$Notice.error({
             title: '采购单新增',
-            desc:  params.order_sn + ' 请新增商品！',
+            desc: params.order_sn + ' 请新增商品！',
           });
           return
         }
         post('/index/Order/insertOrder', params).then((response) => {
-          if(response > 0){
+          if (response > 0) {
             this.$Notice.success({
               title: '采购单新增',
-              desc:  params.order_sn + ' 采购单新增成功！',
+              desc: params.order_sn + ' 采购单新增成功！',
             });
             this.configSingle = false
             this.initialiseIndex(0)
@@ -641,7 +692,7 @@
           }
         })
       },
-      clearAddConfig(){
+      clearAddConfig() {
         this.$refs['refConfig'].resetFields();
         this.orders_config_manage.order_date = ''
         this.orders_config_manage.sn = ''

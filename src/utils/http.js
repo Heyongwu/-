@@ -2,6 +2,7 @@ import axios from 'axios'
 import Cookies from 'js-cookie'
 import router from '../router'
 import config from '@/config'
+import {constant} from '@/constant/constant'
 
 let apiRoot = ''
 if (process.env.NODE_ENV === 'development') {
@@ -53,7 +54,7 @@ axios.interceptors.response.use(
  * @returns {Promise}
  */
 
-export function get (url, params = {}) {
+export function get(url, params = {}) {
   return new Promise((resolve, reject) => {
     axios.get(url, {
       params: params
@@ -67,6 +68,21 @@ export function get (url, params = {}) {
   })
 }
 
+export function getAllSession(seccsionUrl, params = {}) {
+  return new Promise((resolve, reject) => {
+    axios.get(seccsionUrl, {
+      params: params
+    })
+      .then(response => {
+        resolve(response.data)
+      })
+      .catch(err => {
+        reject(err)
+      })
+  })
+}
+
+
 /**
  * 封装post请求
  * @param url
@@ -74,11 +90,20 @@ export function get (url, params = {}) {
  * @returns {Promise}
  */
 
-export function post (url, data = {}) {
+export function post(url, data = {}) {
+  getAllSession("index/Index/is_session").then((response) => {
+    if (response < 1) {
+      router.push({
+        path: '/',
+        querry: {redirect: router.currentRoute.fullPath} // 从哪个页面跳转
+      })
+      constant.sessionFlag = 1
+      return
+    }
+  })
   return new Promise((resolve, reject) => {
     axios.post(url, data)
       .then(response => {
-
         resolve(response.data)
       }, err => {
         reject(err)
@@ -86,10 +111,30 @@ export function post (url, data = {}) {
   })
 }
 
-export function setAxiosbaseURL (url) {
+
+/**
+ * 封装post请求Login
+ * @param url
+ * @param data
+ * @returns {Promise}
+ */
+
+export function postLogin(url, data = {}) {
+  return new Promise((resolve, reject) => {
+    axios.post(url, data)
+      .then(response => {
+        resolve(response.data)
+      }, err => {
+        reject(err)
+      })
+  })
+}
+
+
+export function setAxiosbaseURL(url) {
   axios.defaults.baseURL = url
 }
 
-export function getAxiosbaseURL () {
+export function getAxiosbaseURL() {
   return axios.defaults.baseURL
 }

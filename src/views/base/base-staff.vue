@@ -3,18 +3,18 @@
     <row style="margin-bottom: 20px;display:flex;font-size: 15px">
       <i-col span="2" class="label">用户姓名：</i-col>
       <i-col span="3">
-        <i-input clearable v-model="user_name" placeholder="用户姓名"/>
+        <i-input   v-model="user_name" placeholder="用户姓名"/>
       </i-col>
       <!--      <i-col span="2" class="label">公司名称：</i-col>-->
       <i-col span="2" class="label">&nbsp;</i-col>
       <i-col span="3">
-        <!--        <i-input clearable v-model="company_name" placeholder="公司名称" @on-enter="initialiseIndex(0)"/>-->
+        <!--        <i-input   v-model="company_name" placeholder="公司名称" @on-enter="initialiseIndex(0)"/>-->
       </i-col>
 
       <!--      <i-col span="2" class="label">公司类别：</i-col>-->
       <i-col span="2" class="label"></i-col>
       <i-col span="3">
-        <!--        <i-select clearable v-model="company_type">-->
+        <!--        <i-select   v-model="company_type">-->
         <!--          <i-option v-for="item in company_types" :value="item.code" :key="item.code">{{ item.name }}</i-option>-->
         <!--        </i-select>-->
       </i-col>
@@ -133,6 +133,10 @@
         <i-button v-else type="primary" @click="createSubmit('update')">保存</i-button>
       </div>
     </Modal>
+    <Spin fix v-show="spinShow">
+      <Icon type="load-c" size="30" class="demo-spin-icon-load"></Icon>
+      <div>检索中，请稍侯...</div>
+    </Spin>
   </div>
 </template>
 
@@ -174,91 +178,36 @@
         }],
         tableHeight: '',
         columns: [
-          // {
-          //   title: '编号',
-          //   key: 'code',
-          //   align: 'left',
-          //   width: 160
-          // },
-          // {
-          //   title: '公司id',
-          //   key: 'company_id',
-          //   align: 'left',
-          //   width: 120
-          // },
-          // {
-          //   title: '公司编号',
-          //   key: 'company_sn',
-          //   align: 'center',
-          //   width: 90
-          // },
           {
             title: '公司名称',
             key: 'company_name',
             align: 'center',
-            width: 190
           },
           {
             title: '公司类型',
             key: 'company_value',
             align: 'center',
-            width: 130,
           },
           {
             title: '用户编号',
             key: 'user_sn',
-            align: 'left',
-            width: 160
+            align: 'center',
           },
           {
             title: '用户姓名',
             key: 'user_name',
-            align: 'left'
+            align: 'center'
           },
           {
             title: '联系方式',
             key: 'user_mobile',
-            align: 'left'
+            align: 'center'
           },
           {
             title: '身份类型',
             key: 'user_value',
-            align: 'left'
+            align: 'center'
           }
-          // {
-          //   title: '操作',
-          //   align: 'center',
-          //   width: 125,
-          //   render: (h, params) => {
-          //     return h('div', [
-          //       h('Button', {
-          //         props: {
-          //           type: 'primary',
-          //           size: 'small',
-          //         },
-          //         style: {
-          //           marginRight: '5px'
-          //         },
-          //         on: {
-          //           click: () => {
-          //             this.updateStaff(params.row)
-          //           }
-          //         }
-          //       }, '修改'),
-          //       h('Button', {
-          //         props: {
-          //           type: 'error',
-          //           size: 'small'
-          //         },
-          //         on: {
-          //           click: () => {
-          //             this.removeStaff(params.index, params.row)
-          //           }
-          //         }
-          //       }, '删除')
-          //     ]);
-          //   }
-          // }
         ],
         page: 0,
         num: constant.pageSize,
@@ -363,6 +312,7 @@
         })
       },
       initialiseIndex(page) {
+        this.spinShow = true
         this.page = page + 1
         let index = {
           "num": this.num,
@@ -372,6 +322,7 @@
           index.user_name = this.user_name
         }
         post('/index/User/getUser', index).then((response) => {
+          this.spinShow = false
           for (let i = 0; i < response.data.length; i++) {
             if (response.data[i].company_type == 0) {
               response.data[i].company_value = "测试账号"

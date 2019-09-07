@@ -3,11 +3,11 @@
     <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
       <i-col span="3" class="label">编号：</i-col>
       <i-col span="4">
-        <i-input clearable v-model="mac_sn" placeholder="请输入编号"/>
+        <i-input   v-model="mac_sn" placeholder="请输入编号"/>
       </i-col>
       <i-col span="3" class="label">机台状态：</i-col>
       <i-col span="4">
-        <i-select clearable v-model="is_active">
+        <i-select   v-model="is_active">
           <i-option v-for="item in is_actives" :value="item.code" :key="item.code">{{ item.name }}
           </i-option>
         </i-select>
@@ -99,6 +99,10 @@
         <i-button type="primary" @click="addSaveServiceProvider()">保存</i-button>
       </div>
     </Modal>
+    <Spin fix v-show="spinShow">
+      <Icon type="load-c" size="30" class="demo-spin-icon-load"></Icon>
+      <div>检索中，请稍侯...</div>
+    </Spin>
   </div>
 </template>
 
@@ -115,6 +119,7 @@
         // <--------------------          基础变量          -------------------->
 
         machine: false,
+        spinShow: false,
         code: '',
         state: null,
         title: "新增机台",
@@ -244,6 +249,7 @@
       //<--------------------          增删改查翻页          -------------------->
       //初始化页面
       initialiseIndex() {
+        this.spinShow = true
         let params = {}
         if (this.mac_sn) {
           params.mac_sn = this.mac_sn
@@ -252,6 +258,7 @@
           params.is_active = this.is_active
         }
         post('/index/BaseData/getMac', params).then((response) => {
+          this.spinShow = false
           if (response === constant.distributorErrkCode1 || response === constant.distributorErrkCode2) {
             Common.errNotice(this, constant.distributorErrTitle2, constant.distributorErrTitle1)
           } else {

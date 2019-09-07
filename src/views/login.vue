@@ -61,7 +61,8 @@
 <script>
 import logo from '../static/images/logo1.png'
 import Cookies from 'js-cookie'
-import { post } from '../utils/http'
+import { postLogin} from '../utils/http'
+import {constant} from '@/constant/constant'
 
 export default {
   data () {
@@ -89,7 +90,11 @@ export default {
       }
     }
   },
-
+  mounted(){
+    if(constant.sessionFlag == 1){
+      this.$Message.error("长时间未操作，请重新登录。")
+    }
+  },
   methods: {
     handleSubmit () {
       this.$refs['loginForm'].validate((valid) => {
@@ -108,8 +113,7 @@ export default {
         phone: this.form.phone,
         password: this.form.password
       }
-
-      post('/index/Index/login', params)
+      postLogin('/index/Index/login', params)
         .then((response) => {
           if (response === -1 || response === 0 || response.toString().length === 2) {
             this.$Notice.error({
@@ -117,6 +121,7 @@ export default {
               desc: response.retMsg
             });
           } else{
+            constant.sessionFlag = 0
             Cookies.set('token', response.token)
             Cookies.set('user_id', response.user_id)
             Cookies.set('uCode', response.phone)

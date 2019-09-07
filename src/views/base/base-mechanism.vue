@@ -3,18 +3,18 @@
     <row style="margin-bottom: 20px;display:flex;font-size: 15px">
       <i-col span="2" class="label">公司名称或编号：</i-col>
       <i-col span="3">
-        <i-input clearable v-model="strs" placeholder="请输入公司名称或编号"/>
+        <i-input   v-model="strs" placeholder="请输入公司名称或编号"/>
       </i-col>
 <!--      <i-col span="2" class="label">公司名称：</i-col>-->
       <i-col span="2" class="label">&nbsp;</i-col>
       <i-col span="3">
-<!--        <i-input clearable v-model="company_name" placeholder="公司名称" @on-enter="initialiseIndex(0)"/>-->
+<!--        <i-input   v-model="company_name" placeholder="公司名称" @on-enter="initialiseIndex(0)"/>-->
       </i-col>
 
 <!--      <i-col span="2" class="label">公司类别：</i-col>-->
       <i-col span="2" class="label"></i-col>
       <i-col span="3">
-<!--        <i-select clearable v-model="company_type">-->
+<!--        <i-select   v-model="company_type">-->
 <!--          <i-option v-for="item in company_types" :value="item.code" :key="item.code">{{ item.name }}</i-option>-->
 <!--        </i-select>-->
       </i-col>
@@ -106,10 +106,10 @@
         <i-button v-else type="primary" @click="createSubmit('update')">保存</i-button>
       </div>
     </Modal>
-    <!--    <Spin fix v-show="spinShow">-->
-    <!--      <Icon type="load-c" size="30" class="demo-spin-icon-load"></Icon>-->
-    <!--      <div>操作中，请稍侯...</div>-->
-    <!--    </Spin>-->
+    <Spin fix v-show="spinShow">
+      <Icon type="load-c" size="30" class="demo-spin-icon-load"></Icon>
+      <div>检索中，请稍侯...</div>
+    </Spin>
   </div>
 </template>
 
@@ -160,7 +160,7 @@
           {
             title: '公司id',
             key: 'company_id',
-            align: 'left',
+            align: 'center',
           },
           {
             title: '公司编号',
@@ -185,12 +185,12 @@
           {
             title: '联系人姓名',
             key: 'link_name',
-            align: 'left'
+            align: 'center'
           },
           {
             title: '联系人方式',
             key: 'link_phone',
-            align: 'left'
+            align: 'center'
           }
         ],
         page: 0,
@@ -279,6 +279,7 @@
         })
       },
       initialiseIndex(page) {
+        this.spinShow = true
         this.page = page + 1
         let index = {
           "num": this.num,
@@ -289,6 +290,7 @@
         }
         post('/index/Company/getCompany', index).then((response) => {
           // console.log(JSON.stringify(response))
+          this.spinShow = false
           for (let i = 0; i < response.length; i++) {
             if (response[i].company_type == 0) {
               response[i].company_value = "测试账号"

@@ -3,7 +3,7 @@
     <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
       <i-col span="3" class="label">商品编号：</i-col>
       <i-col span="4">
-        <i-input clearable v-model="goods_sn" placeholder="请输入编号"/>
+        <i-input   v-model="goods_sn" placeholder="请输入编号"/>
       </i-col>
       <i-col span="3" class="label">&nbsp;</i-col>
       <i-col span="4">
@@ -32,6 +32,10 @@
         <Page :current="pageNum" :page-size="pageSize" :total="total" @on-change="pageChange" simple/>
       </i-col>
     </row>
+    <Spin fix v-show="spinShow">
+      <Icon type="load-c" size="30" class="demo-spin-icon-load"></Icon>
+      <div>检索中，请稍侯...</div>
+    </Spin>
   </div>
 </template>
 
@@ -53,6 +57,7 @@
         header: {token: ''},
         goods_sn: '',
         loading: true,
+        spinShow: true,
         // 每页显示条目个数
         pageSize: constant.pageSize,
         // 当前页数
@@ -165,6 +170,7 @@
       //<--------------------          增删改查翻页          -------------------->
       //初始化页面
       initialiseIndex(page) {
+        this.spinShow = true
         this.pageSize = page + 1
         let index = {
           "page_size": page,
@@ -174,6 +180,7 @@
           index.goods_sn = this.goods_sn
         }
         post('/index/Depot/getDepot', index).then((response) => {
+          this.spinShow = false
           this.total = response.count
           this.serviceProviders = response.data
         }, err => {

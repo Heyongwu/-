@@ -4,7 +4,7 @@
 
       <i-col span="3" class="label">当前完成状态：</i-col>
       <i-col span="4">
-        <i-select clearable v-model="state">
+        <i-select clearable  v-model="state">
           <i-option v-for="item in states" :value="item.code" :key="item.code">{{ item.name }}
           </i-option>
         </i-select>
@@ -83,6 +83,10 @@
         <i-button @click="productionPlanningCurriculumFlag = false">关闭</i-button>
       </div>
     </Modal>
+    <Spin fix v-show="spinShow">
+      <Icon type="load-c" size="30" class="demo-spin-icon-load"></Icon>
+      <div>检索中，请稍侯...</div>
+    </Spin>
   </div>
 </template>
 
@@ -107,6 +111,7 @@
         contract_name: '',
         name: '',
         leftSans: true,
+        spinShow: true,
         valLeftRight: '',
         planLeftRight: '',
         loading: true,
@@ -454,6 +459,7 @@
       //<--------------------          增删改查翻页          -------------------->
       //初始化页面
       initialiseIndex(page) {
+        this.spinShow = true
         this.page = page + 1
         let params = {
           "num":this.num,
@@ -463,6 +469,7 @@
           params.plan_status = this.state
         }
         post('/index/Produce/getPlan', params).then((response) => {
+          this.spinShow = false
           this.total = response.count
           this.serviceProviders = response.data
         }, err => {

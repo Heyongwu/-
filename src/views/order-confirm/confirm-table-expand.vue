@@ -14,7 +14,7 @@
           <i-col span="2">&nbsp;</i-col>
           <i-col span="7">
             <form-item label="机台：" prop="mac">
-              <i-select v-model="mac" @on-change="jurisdictionMenurChange">
+              <i-select clearable v-model="mac" @on-change="jurisdictionMenurChange">
                 <i-option v-for="item in macs" :value="item.mac_sn" :key="item.mac_sn">
                   {{ item.mac_name }}
                 </i-option>
@@ -52,12 +52,26 @@
         <i-button type="primary" @click="createSubmit">保存</i-button>
       </div>
     </Modal>
+    <Modal title="生产计划详情" :mask-closable="false" v-model="productionPlanningCurriculumFlag" width=50>
+      <row>
+        <i-table border :height="tableHeight" :columns="columnsCurriculum" :data="Curriculum"></i-table>
+      </row>
+      <row>
+        <i-col span="24" style="text-align: center">
+          <Page :current="pageSon" :page-size="numSon" :total="totalSon" @on-change="pageChangeSon" simple/>
+        </i-col>
+      </row>
+      <div slot="footer">
+        <i-button @click="productionPlanningCurriculumFlag = false">关闭</i-button>
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
   import {post} from '@/utils/http'
   import Common from "@/utils/common";
   import {constant} from '@/constant/constant'
+
 
   export default {
     props: {
@@ -68,10 +82,16 @@
     data() {
       return {
         // <--------------------          基础变量          -------------------->
+        pageSon:0,
+        numSon:constant.pageSize,
+        totalSon:0,
         tableHeight: '',
+        keysRecId: '',
         selectList: [],
+        Curriculum: [],
         isShow: false,
         productionPlanningFlag: false,
+        productionPlanningCurriculumFlag: false,
         titleNumber: 0,
         titlePlan: 0,
         order_id: '',
@@ -84,6 +104,32 @@
         end_date: '',
         counts: 0,
         //<--------------------          表格头布局          -------------------->
+        columnsCurriculum: [
+          {
+            title: '机台编码',
+            key: 'mac_id',
+            align: 'center'
+          }, {
+            title: '机台名称',
+            key: 'mac_sn',
+            align: 'center'
+          },
+          {
+            title: '生产开始时间',
+            key: 'plan_begin',
+            align: 'center'
+          },
+          {
+            title: '生产结束时间',
+            key: 'plan_end',
+            align: 'center'
+          },
+          {
+            title: '生产数量',
+            key: 'plan_qty',
+            align: 'center'
+          }
+        ],
         serviceProviders: [],
         columns1: [
           {
@@ -134,6 +180,27 @@
           {
             title: '计划数量',
             key: 'plan_qty',
+            align: 'center',
+            render: (h, params) => {
+              this.keysRecId = params.row.rec_id
+              return h('a', {
+                attrs: {},
+                on: {
+                  click: () => {
+                    this.fourCurriculum(params.row.rec_id,0)
+                  }
+                }
+              }, params.row.plan_qty)
+            }
+          },
+          {
+            title: '在途数量',
+            key: 'deliver_qty',
+            align: 'center'
+          },
+          {
+            title: '已确认数量',
+            key: 'receiv_qty',
             align: 'center'
           },
           {
@@ -250,6 +317,27 @@
           {
             title: '计划数量',
             key: 'plan_qty',
+            align: 'center',
+            render: (h, params) => {
+              this.keysRecId = params.row.rec_id
+              return h('a', {
+                attrs: {},
+                on: {
+                  click: () => {
+                    this.fourCurriculum(params.row.rec_id,0)
+                  }
+                }
+              }, params.row.plan_qty)
+            }
+          },
+          {
+            title: '在途数量',
+            key: 'deliver_qty',
+            align: 'center'
+          },
+          {
+            title: '已确认数量',
+            key: 'receiv_qty',
             align: 'center'
           },
           {
@@ -441,7 +529,6 @@
       },
       //保存生产计划
       productionPlanningSave() {
-
         let params = {}
         params.order_id = this.order_id
         params.rec_id = this.rec_id
@@ -490,16 +577,36 @@
         this.end_date = ''
         this.counts = 0
 
-      }
+      },
+      //页面每天添加履历
+      fourCurriculum(plan_id,page) {
+        if (page === 0) {
+          this.pageSon = 1
+        }
+        let params = {
+          page: page,
+          num: this.numSon,
+          rec_id: plan_id
+        }
+        post('/index/Produce/getPlan', params).then((response) => {
+          this.productionPlanningCurriculumFlag = true
+          this.Curriculum = response.data
+          this.totalSon = response.count
+        }, err => {
+          Common.errNotice(this, err, constant.distributorErrTitle)
+        })
+      },
+      pageChangeSon(value) {
+          this.fourCurriculum(this.keysRecId,value - 1)
+      },
     }
   };
 </script>
 
-
 <style scoped>
-  * {
-    margin: 0;
-    padding: 0;
+  .label {
+    text-align: right;
+    margin: auto;
   }
 
 </style>

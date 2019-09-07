@@ -38,7 +38,6 @@ export default {
       }
       post('/index/Index/login', params)
         .then((response) => {
-          alert(JSON.stringify(response))
           if (response === -1|| response ===  0 || response.toString().length === 2) {
             /*iView.Message.error('手机号或密码错误！');*/
             context.commit("setSignTrue", null, { root: true });
@@ -55,7 +54,6 @@ export default {
             router.push("/home")
           }
         }, err => {
-        alert(JSON.stringify(err))
           /*iView.Message.error('手机号或密码错误！');*/
           context.commit("setSignTrue", null, { root: true });
         })

@@ -33,7 +33,7 @@
                 <Icon type="ios-arrow-down"></Icon>
               </a>
               <DropdownMenu slot="list">
-                <DropdownItem name="logout">退出登陆</DropdownItem>
+                <DropdownItem name="logout">退出</DropdownItem>
               </DropdownMenu>
             </Dropdown>
             <div class="user-info">欢迎！</div>
@@ -41,7 +41,7 @@
         </Header>
         <Content :style="{padding: '0 16px 16px'}">
           <Breadcrumb :style="{margin: '16px 0'}">
-            <BreadcrumbItem to="/home">Home</BreadcrumbItem>
+            <BreadcrumbItem to="/home">主页</BreadcrumbItem>
             <BreadcrumbItem>生产计划</BreadcrumbItem>
           </Breadcrumb>
           <Card>

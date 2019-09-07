@@ -175,7 +175,7 @@ export default {
       company_id = "0" + parseInt(company_id)
     }
 
-    let year =(myDate.getFullYear() + '').substr(2, 3)
+    let year =(myDate.getFullYear() + '')
     let month =''
     if((myDate.getMonth() + 1)<10){
       month = "0"+(myDate.getMonth() + 1)
@@ -189,15 +189,17 @@ export default {
       day = ""+(myDate.getDate() )
     }
     if ((td +1 ).toString().length == 1) {
-      td = "000" + (parseInt(td) + 1)
+      td = "0000" + (parseInt(td) + 1)
     } else if ((td +1 ).toString().length == 2) {
-      td = "00" + (parseInt(td) + 1)
+      td = "000" + (parseInt(td) + 1)
     } else if ((td +1 ).toString().length == 3) {
+      td = "00" + (parseInt(td) + 1)
+    } else if ((td +1 ).toString().length == 4){
       td = "0" + (parseInt(td) + 1)
-    } else {
+    }else{
       td = parseInt(td) + 1
     }
-    code = "2*BR" + company_id + year + month + day + td
+    code = "2*Br" +  year + month + day + td
     return code
   },
   //打印条码

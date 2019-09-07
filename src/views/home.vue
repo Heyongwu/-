@@ -8,7 +8,7 @@
           <a class="main-menu-li-a">{{uName}}</a>
           <ul>
             <li class="main-menu-li" @click="logout">
-              <a class="main-menu-li-a main-menu-li-a-two">登出</a>
+              <a class="main-menu-li-a main-menu-li-a-two">退出</a>
             </li>
           </ul>
         </li>

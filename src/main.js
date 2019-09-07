@@ -20,8 +20,9 @@ Vue.use(iView)
 // Vue.use(VueQuillEditor)
 Vue.use(vue_resource)
 
+
 new Vue({
   router,
   store,
-  render: h => h(App)
+  render: h => h(App),
 }).$mount('#app')

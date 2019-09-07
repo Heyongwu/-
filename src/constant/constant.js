@@ -1,5 +1,6 @@
 export const constant = {
-  pageSize: 10,
+  sessionFlag: 0,
+  pageSize: 200,
   distributorOkCodePwd: 2,
   distributorOkCode: 1,
   distributorErrkCode1: 0,
