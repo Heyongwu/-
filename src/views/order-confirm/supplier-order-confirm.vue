@@ -19,7 +19,6 @@
       <i-col span="3">
       </i-col>
     </row>
-    <br>
     <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
       <i-col span="3" class="label">排产状态：</i-col>
       <i-col span="4">
@@ -38,7 +37,6 @@
         <i-button type="primary" @click="initialiseIndex(0)">检索</i-button>
       </i-col>
     </row>
-    <br>
     <row :gutter="16"  >
       <i-col span="3">
         <i-button type="primary" @click="addServiceProviders()">新增</i-button>
@@ -53,24 +51,23 @@
         <Page :current="pageMax" :page-size="numMax" :total="totalMax" @on-change="pageChange" simple/>
       </i-col>
     </row>
-    <Modal :title=title fullscreen :mask-closable="false" v-model="configSingle" width=90>
+    <Modal :title=title :mask-closable="false" v-model="configSingle" width=75 :styles="{top: '40px'}">
       <i-form :rules="checkRules" ref="refConfig" :model="orders_config_manage">
-        <br>
         <row :gutter="16">
-          <i-col span="2">&nbsp;</i-col>
+          <i-col span="1">&nbsp;</i-col>
           <i-col span="4">
             <form-item label="订单日期：　 　 　 　" prop="order_date">
               <DatePicker type="date" v-model="orders_config_manage.order_date" placeholder="请选择订单日期"></DatePicker>
             </form-item>
           </i-col>
           <i-col span="1">&nbsp;</i-col>
-          <i-col span="6">
+          <i-col span="4">
             <form-item label="订单编号：" prop="sn">
               <i-input v-model="orders_config_manage.sn"/>
             </form-item>
           </i-col>
           <i-col span="1">&nbsp;</i-col>
-          <i-col span="6">
+          <i-col span="4">
             <form-item label="供应商：" prop="supplier">
               <i-select clearable v-model="orders_config_manage.supplier"
                         @on-change="jurisdictionMenurChange">
@@ -80,38 +77,36 @@
               </i-select>
             </form-item>
           </i-col>
-          <i-col span="2">&nbsp;</i-col>
+          <i-col span="1">&nbsp;</i-col>
         </row>
-        <br>
         <row :gutter="16">
-          <i-col span="2">&nbsp;</i-col>
-          <i-col span="20">
+          <i-col span="1">&nbsp;</i-col>
+          <i-col span="22">
             <form-item label="备注：" prop="call_type">
               <i-input type="textarea" v-model="orders_config_manage.remark"/>
             </form-item>
           </i-col>
-          <i-col span="2">&nbsp;</i-col>
+          <i-col span="1">&nbsp;</i-col>
         </row>
-        <br>
         <row>
-          <i-col span="2">&nbsp;</i-col>
+          <i-col span="1">&nbsp;</i-col>
           <i-col span="3">
             <i-button type="primary" @click="searchGoods(0)">新增商品</i-button>
           </i-col>
         </row>
         <row :gutter="16">
-          <i-col span="2">&nbsp;</i-col>
-          <i-col span="20">
+          <i-col span="1">&nbsp;</i-col>
+          <i-col span="22">
             <!--            @on-current-change="deliveryChecked"-->
             <i-table border highlight-row ref="currentRowTable"
-                     :height="tableHeight" :columns="configColumns" :data="configNote"></i-table>
+                     :height="tableHeightLis" :columns="configColumns" :data="configNote"></i-table>
           </i-col>
-          <i-col span="2">&nbsp;</i-col>
+          <i-col span="1">&nbsp;</i-col>
         </row>
       </i-form>
       <div slot="footer">
         <i-button @click="configSingle = false">取消</i-button>
-        <i-button type="primary" @click="createSubmit('add')">保存</i-button>
+        <i-button type="primary" @click="createSubmit('add')" v-preventReClick>保存</i-button>
       </div>
     </Modal>
     <Modal :title=title :mask-closable="false" v-model="retrievalDeliverySingle" width=70>
@@ -196,7 +191,7 @@
         goods_name: '',
         loading: true,
         // 每页显示条目个数
-        num: constant.pageSize,
+        num: 10,
         numMax: constant.pageSize,
         // 当前页数
         page: 0,
@@ -205,6 +200,7 @@
         total: 0,
         totalMax: 0,
         tableHeight: '',
+        tableHeightLis: '',
         title: '新增采购单',
         configSingle: false,
         orders_config_manage: {
@@ -404,22 +400,10 @@
             title: '原币价税合计',
             key: 'total_amount',
             align: 'center',
-            // render: (h, params) => {
-            //   return h('ul', [
-            //     h(
-            //       "li", {
-            //         props: {
-            //           value:params.row.amount_qty * params.row.taxprice,
-            //           transfer: true,  //select不受body显示，以免显示不出来
-            //           disabled:true
-            //         }
-            //       },
-            //     )]);
-            // }
           },
           {
             title: '布纹',
-            key: 'dw',
+            key: 'goods_type',
             align: 'center'
           },
           {
@@ -490,7 +474,8 @@
         this.$router.push('/')
         return
       } else {
-        this.tableHeight = document.documentElement.clientHeight - 395
+        this.tableHeight = document.documentElement.clientHeight - 350
+        this.tableHeightLis = document.documentElement.clientHeight - 450
         this.initialiseIndex(0)
       }
     },

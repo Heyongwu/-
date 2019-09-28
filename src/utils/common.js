@@ -257,7 +257,7 @@ export default {
   },
   //打印送货单
   fnPrint(rowDataList) {
-    console.log(JSON.stringify(rowDataList))
+    // console.log(JSON.stringify(rowDataList))
     for (var i = 0; i < rowDataList.length; i++) {
       var whichOne = 'jx';  //模板
       let LODOP = getLodop();
@@ -291,13 +291,13 @@ export default {
         LODOP.ADD_PRINT_TEXT("26.22mm", left + 129.41 + "mm", "25mm", "5.37mm", nowdate);
       }
       //标题等
-      LODOP.ADD_PRINT_TEXT("33.02mm", left + 1.69 + "mm", "9.55mm", "5.37mm", "行号");
+      LODOP.ADD_PRINT_TEXT("33.02mm", left + 1 + "mm", "9.55mm", "5.37mm", "行号");
       LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
-      LODOP.ADD_PRINT_TEXT("33.02mm", left + 3.48 + "mm", "37.33mm", "5.37mm", "采购单编号");
+      LODOP.ADD_PRINT_TEXT("33.02mm", left + 5.48 + "mm", "37.33mm", "5.37mm", "采购单编号");
       LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
-      LODOP.ADD_PRINT_TEXT("33.02mm", left + 25.79 + "mm", "35.48mm", "5.37mm", "存货编码");
+      LODOP.ADD_PRINT_TEXT("33.02mm", left + 32.79 + "mm", "35.48mm", "5.37mm", "存货编码");
       LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
-      LODOP.ADD_PRINT_TEXT("33.02mm", left + 55.71 + "mm", "34.69mm", "5.37mm", "名称");
+      LODOP.ADD_PRINT_TEXT("33.02mm", left + 60.71 + "mm", "34.69mm", "5.37mm", "名称");
       LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
       LODOP.ADD_PRINT_TEXT("33.02mm", left + 88.71 + "mm", "34.69mm", "5.37mm", "型号");
       LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
@@ -308,9 +308,9 @@ export default {
       LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 0.2 + "mm", rowBeginTop + "mm", left + 154.1 + "mm", 0, 1);
       rowBeginTop += rowHeight;
       LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 0.2 + "mm", (rowBeginTop - rowHeight) + "mm", left + 0.2 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 10 + "mm", (rowBeginTop - rowHeight) + "mm", left + 10 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 30.79 + "mm", (rowBeginTop - rowHeight) + "mm", left + 30.79 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 55.74 + "mm", (rowBeginTop - rowHeight) + "mm", left + 55.74 + "mm", 0, 1);
+      LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 9 + "mm", (rowBeginTop - rowHeight) + "mm", left + 9 + "mm", 0, 1);
+      LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 35.79 + "mm", (rowBeginTop - rowHeight) + "mm", left + 35.79 + "mm", 0, 1);
+      LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 65.74 + "mm", (rowBeginTop - rowHeight) + "mm", left + 65.74 + "mm", 0, 1);
       LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 90.71 + "mm", (rowBeginTop - rowHeight) + "mm", left + 90.71 + "mm", 0, 1);
       LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 117 + "mm", (rowBeginTop - rowHeight) + "mm", left + 117 + "mm", 0, 1);
       LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 127.8 + "mm", (rowBeginTop - rowHeight) + "mm", left + 127.8 + "mm", 0, 1);
@@ -321,13 +321,13 @@ export default {
       var trheight = 37.32;//用于每个竖线距离上面的固定长度
       var thHeight = 39;//用于每行商品距离上面的固定长度
       var newHeight = 0;//用于动态增加一行的长度
-      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 1.69 + "mm", "9.55mm", "5.37mm", 1);
+      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 1 + "mm", "9.55mm", "5.37mm", 1);
       LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
       LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 3.48 + "mm", "37.07mm", "5.37mm", rowDataList[i].data[0].OrderSn);
       LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
-      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 25.48 + "mm", "37.07mm", "5.37mm", rowDataList[i].data[0].cInvCode);
+      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 32.48 + "mm", "37.07mm", "5.37mm", rowDataList[i].data[0].cInvCode);
       LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
-      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 55.79 + "mm", "35.48mm", "5.37mm", rowDataList[i].data[0].cInvName);
+      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 60.79 + "mm", "35.48mm", "5.37mm", rowDataList[i].data[0].cInvName);
       LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
       LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 88.71 + "mm", "34.69mm", "5.37mm", rowDataList[i].data[0].cInvStd);
       LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
@@ -336,9 +336,9 @@ export default {
       LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 129.49 + "mm", "26.48mm", "5.37mm", rowDataList[i].data[0].iQuantity);
       LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
       LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 0.2 + "mm", trheight + newHeight + rowHeight + "mm", left + 0.2 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 10 + "mm", trheight + newHeight + rowHeight + "mm", left + 10 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 30.7 + "mm", trheight + newHeight + rowHeight + "mm", left + 30.7 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 55.79 + "mm", trheight + newHeight + rowHeight + "mm", left + 55.79 + "mm", 0, 1);
+      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 9 + "mm", trheight + newHeight + rowHeight + "mm", left + 9 + "mm", 0, 1);
+      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 35.7 + "mm", trheight + newHeight + rowHeight + "mm", left + 35.7 + "mm", 0, 1);
+      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 65.79 + "mm", trheight + newHeight + rowHeight + "mm", left + 65.79 + "mm", 0, 1);
       LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 90.7 + "mm", trheight + newHeight + rowHeight + "mm", left + 90.7 + "mm", 0, 1);
       LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 117 + "mm", trheight + newHeight + rowHeight + "mm", left + 117 + "mm", 0, 1);
       LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 127.8 + "mm", trheight + newHeight + rowHeight + "mm", left + 127.8 + "mm", 0, 1);
@@ -368,7 +368,10 @@ export default {
       LODOP.PRINT();
       // LODOP.PREVIEW();
     }
+
   }
+
+
 
 }
 function padLeftZero(str) {

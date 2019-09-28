@@ -96,7 +96,7 @@
       </i-form>
       <div slot="footer">
         <i-button @click="machine = false">取消</i-button>
-        <i-button type="primary" @click="addSaveServiceProvider()">保存</i-button>
+        <i-button type="primary" @click="addSaveServiceProvider()" v-preventReClick>保存</i-button>
       </div>
     </Modal>
     <Spin fix v-show="spinShow">

@@ -4,7 +4,7 @@
 
       <i-col span="3" class="label">当前完成状态：</i-col>
       <i-col span="4">
-        <i-select clearable  v-model="state">
+        <i-select clearable v-model="state">
           <i-option v-for="item in states" :value="item.code" :key="item.code">{{ item.name }}
           </i-option>
         </i-select>
@@ -50,9 +50,8 @@
           <i-col span="2">&nbsp;</i-col>
           <i-col span="5">
             <form-item label="数量：" prop="sn">
-              <!--              <InputNumber v-model="counts" style="width: 188px"  @blur.native.capture="check_price()"/>-->
-              <InputNumber v-model="counts" style="width: 188px"
-                           @blur.native.capture="check_price(titleNumber,titlePlan)"/>
+              <!--              @blur.native.capture="check_price(titleNumber,titlePlan)"-->
+              <InputNumber v-model="counts" style="width: 188px"/>
             </form-item>
           </i-col>
           <i-col span="6">&nbsp;</i-col>
@@ -66,7 +65,7 @@
       </i-form>
       <div slot="footer">
         <i-button @click="productionPlanningFlag = false">关闭</i-button>
-        <i-button type="primary" @click="productionPlanningSave">保存</i-button>
+        <i-button type="primary" @click="productionPlanningSave" v-preventReClick>保存</i-button>
       </div>
     </Modal>
 
@@ -343,7 +342,7 @@
                 on: {
                   click: () => {
                     this.titleCurriculum = "入库数量履历"
-                    this.fourCurriculum("ruku", params.row.goods_id)
+                    this.fourCurriculum("ruku", params.row.plan_id)
                   }
                 }
               }, params.row.in_qty)
@@ -357,7 +356,6 @@
                   props: {
                     type: 'primary',
                     size: 'small',
-                    disabled: this.isDisabled(params.row.plan_qty, params.row.produce_qty),
                   },
                   style: {
                     marginTop: '5px',
@@ -462,8 +460,8 @@
         this.spinShow = true
         this.page = page + 1
         let params = {
-          "num":this.num,
-          "page":page,
+          "num": this.num,
+          "page": page,
         }
         if (this.state) {
           params.plan_status = this.state
@@ -482,11 +480,16 @@
 
       //判断是否禁用按钮
       isDisabled(valTypeLeft, valTypeRight) {
-        if (valTypeLeft <= 0 || valTypeLeft - valTypeRight <= 0) {
+        if (valTypeLeft == 0) {
           return true
         } else {
           return false
         }
+        // if (valTypeLeft <= 0 || valTypeLeft - valTypeRight <= 0) {
+        //   return true
+        // } else {
+        //   return false
+        // }
       },
       check_price(valTypeLeft, valTypeRight) {
         let difference = valTypeLeft - valTypeRight
@@ -535,65 +538,65 @@
         params.mac_sn = this.mac_sn
         if (this.typePlan === 1) {
           this.checkIsNull()
-          let difference = this.titleNumber - this.titlePlan
-          if (this.counts > difference) {
-            this.$Notice.error({
-              title: '汇报数量超出',
-              desc: "汇报数量不能超出计划总数！ " + '<br>' + " 当前可汇报总数：" + difference
-            });
-          } else {
-            params.produce_qty = this.counts
-            params.report_date = Common.formatDate(this.produceDate, "yyyy-MM-dd")
-            this.insertCapacity(params)
-          }
+          // let difference = this.titleNumber - this.titlePlan
+          // if (this.counts > difference) {
+          //   this.$Notice.error({
+          //     title: '汇报数量超出',
+          //     desc: "汇报数量不能超出计划总数！ " + '<br>' + " 当前可汇报总数：" + difference
+          //   });
+          // } else {
+          params.produce_qty = this.counts
+          params.report_date = Common.formatDate(this.produceDate, "yyyy-MM-dd")
+          this.insertCapacity(params)
+          // }
         } else if (this.typePlan === 2) {
           this.checkIsNull()
-          let difference = this.titleNumber - this.titlePlan
-          if (this.counts > difference) {
-            this.$Notice.error({
-              title: '检验数量超出',
-              desc: "检验数量不能超出汇报总数！ " + '<br>' + " 当前可检验总数：" + difference
-            });
-          } else {
-            params.check_qty = this.counts
-            params.check_date = Common.formatDate(this.produceDate, "yyyy-MM-dd")
-            this.insertCheck(params)
-          }
+          // let difference = this.titleNumber - this.titlePlan
+          // if (this.counts > difference) {
+          //   this.$Notice.error({
+          //     title: '检验数量超出',
+          //     desc: "检验数量不能超出汇报总数！ " + '<br>' + " 当前可检验总数：" + difference
+          //   });
+          // } else {
+          params.check_qty = this.counts
+          params.check_date = Common.formatDate(this.produceDate, "yyyy-MM-dd")
+          this.insertCheck(params)
+          // }
         } else if (this.typePlan === 3) {
           this.checkIsNullDingX()
-          if (Common.isNullOrUndefined(this.counts) == false) {
-            this.$Notice.error({
-              title: '请输入数量',
-            });
-            return
-          }
-          let difference = this.titleNumber - this.titlePlan
-          if (this.counts > difference) {
-            this.$Notice.error({
-              title: '定型数量超出',
-              desc: "定型数量不能超出检验总数！ " + '<br>' + " 当前可定型总数：" + difference
-            });
-          } else {
-            params.dingxing_qty = this.counts
-            params.start_date = Common.formatDate(this.start_date, "yyyy-MM-dd")
-            params.end_date = Common.formatDate(this.end_date, "yyyy-MM-dd")
-            this.insertDingxing(params)
-          }
+          // if (Common.isNullOrUndefined(this.counts) == false) {
+          //   this.$Notice.error({
+          //     title: '请输入数量',
+          //   });
+          //   return
+          // }
+          // let difference = this.titleNumber - this.titlePlan
+          // if (this.counts > difference) {
+          //   this.$Notice.error({
+          //     title: '定型数量超出',
+          //     desc: "定型数量不能超出检验总数！ " + '<br>' + " 当前可定型总数：" + difference
+          //   });
+          // } else {
+          params.dingxing_qty = this.counts
+          params.start_date = Common.formatDate(this.start_date, "yyyy-MM-dd")
+          params.end_date = Common.formatDate(this.end_date, "yyyy-MM-dd")
+          this.insertDingxing(params)
+          // }
         } else {
           this.checkIsNull()
-          let difference = this.titleNumber - this.titlePlan
-          if (this.counts > difference) {
-            this.$Notice.error({
-              title: '入库数量超出',
-              desc: "入库数量不能超出定型总数！ " + '<br>' + " 当前可入库总数：" + difference
-            });
-          } else {
-            params.in_num = this.counts
-            params.goods_id = this.goods_id
-            params.goods_sn = this.goods_sn
-            params.in_date = Common.formatDate(this.produceDate, "yyyy-MM-dd")
-            this.inDepot(params)
-          }
+          // let difference = this.titleNumber - this.titlePlan
+          // if (this.counts > difference) {
+          //   this.$Notice.error({
+          //     title: '入库数量超出',
+          //     desc: "入库数量不能超出定型总数！ " + '<br>' + " 当前可入库总数：" + difference
+          //   });
+          // } else {
+          params.in_num = this.counts
+          params.goods_id = this.goods_id
+          params.goods_sn = this.goods_sn
+          params.in_date = Common.formatDate(this.produceDate, "yyyy-MM-dd")
+          this.inDepot(params)
+          // }
         }
       },
       //产能汇报
@@ -706,7 +709,7 @@
           page: page,
           num: this.numSon,
           type: val,
-          goods_id: plan_id
+          plan_id: plan_id
         }
         post('/index/Depot/getDepotIn', params).then((response) => {
           this.productionPlanningCurriculumFlag = true

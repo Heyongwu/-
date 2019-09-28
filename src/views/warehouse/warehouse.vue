@@ -42,7 +42,7 @@
         <Content :style="{padding: '0 16px 16px'}">
           <Breadcrumb :style="{margin: '16px 0'}">
             <BreadcrumbItem to="/home">主页</BreadcrumbItem>
-            <BreadcrumbItem>生产计划</BreadcrumbItem>
+            <BreadcrumbItem>仓库管理</BreadcrumbItem>
           </Breadcrumb>
           <Card>
             <div ref="homePage">

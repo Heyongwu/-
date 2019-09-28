@@ -91,23 +91,35 @@ export function getAllSession(seccsionUrl, params = {}) {
  */
 
 export function post(url, data = {}) {
-  getAllSession("index/Index/is_session").then((response) => {
-    if (response < 1) {
-      router.push({
-        path: '/',
-        querry: {redirect: router.currentRoute.fullPath} // 从哪个页面跳转
-      })
-      constant.sessionFlag = 1
-      return
-    }
-  })
+  let count = 0
+  if (constant.flag == false && count == 0) {
+    setTimeout(function () {
+      constant.flag = true
+      count = 1
+    }, 150000);
+  }
+  if (constant.flag) {
+    getAllSession("index/Index/is_session").then((response) => {
+      constant.flag = false
+      if (response < 1) {
+        router.push({
+          path: '/',
+          querry: {redirect: router.currentRoute.fullPath} // 从哪个页面跳转
+        })
+        constant.sessionFlag = 1
+        return
+      }
+    })
+  }
+
   return new Promise((resolve, reject) => {
     axios.post(url, data)
-      .then(response => {
-        resolve(response.data)
-      }, err => {
-        reject(err)
-      })
+      .then(
+        response => {
+          resolve(response.data)
+        }, err => {
+          reject(err)
+        })
   })
 }
 

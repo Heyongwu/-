@@ -70,7 +70,7 @@
           },
           {
             title: '布纹',
-            key: 'money',
+            key: 'goods_type',
             align: 'center'
           },
           {

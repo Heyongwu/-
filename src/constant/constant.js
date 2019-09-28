@@ -1,5 +1,6 @@
 export const constant = {
   sessionFlag: 0,
+  flag: true,
   pageSize: 200,
   distributorOkCodePwd: 2,
   distributorOkCode: 1,

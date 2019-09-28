@@ -3,19 +3,18 @@
     <Modal :title=title :mask-closable="false" v-model="deliverySingle" width=80 :styles="{top: '40px'}">
       <i-form :rules="checkRules" ref="Delivery" :model="addAlls">
         <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
-          <i-col span="1">&nbsp;</i-col>
           <i-col span="4">
             <form-item label="送货单号：" prop="wuliu_sn">
               <i-input v-model="addAlls.wuliu_sn" placeholder="请输入送货单号" disabled/>
             </form-item>
           </i-col>
-          <i-col span="3">&nbsp;</i-col>
+          <i-col span="4">&nbsp;</i-col>
           <i-col span="4">
             <form-item label="送货人：" prop="song_person">
               <i-input :maxlength="100" v-model="addAlls.song_person" placeholder="请输入送货人"/>
             </form-item>
           </i-col>
-          <i-col span="3">&nbsp;</i-col>
+          <i-col span="4">&nbsp;</i-col>
           <i-col span="5">
             <form-item label="送货日期：　　　　　　　　　　　　　　　　" prop="song_date">
               <DatePicker type="date" placeholder="请选择送货日期" v-model="addAlls.song_date"></DatePicker>
@@ -24,7 +23,6 @@
           <i-col span="4">&nbsp;</i-col>
         </row>
         <row>
-          <i-col span="1">&nbsp;</i-col>
           <i-col span="1">
             <i-button @click="searchOrder(1)" type="primary" :disabled="preservationDisabled == false">导入订单</i-button>
           </i-col>
@@ -38,8 +36,7 @@
           </i-col>
         </row>
         <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
-          <i-col span="1">&nbsp;</i-col>
-          <i-col span="22">
+          <i-col span="24">
             <!--            @on-current-change="deliveryChecked"-->
             <i-table border highlight-row ref="currentRowTable" v-if="preservationDisabled"
                      @on-row-click="selectUnit1"
@@ -50,8 +47,8 @@
                      @on-select="selectAlls" @on-select-all-cancel="selectAlls"
                      :height="tableHeight2" :columns="deliveryColumns" :data="deliveryNote"></i-table>
           </i-col>
-          <i-col span="1">&nbsp;</i-col>
         </row>
+        <p style="padding-left: 80%;font-weight: bold">卷数总和：{{singleCOUNT}}</p>
         <br>
         <row :gutter="16" style="display:flex">
           <i-col span="1">&nbsp;</i-col>
@@ -74,7 +71,7 @@
       </i-form>
       <div slot="footer">
         <i-button @click="deliverySingle = false">关闭</i-button>
-        <i-button v-if="preservationDisabled" type="primary" @click="addSaveServiceProvider" :disabled="detailsFlag">
+        <i-button v-if="preservationDisabled" type="primary" @click="addSaveServiceProvider" :disabled="detailsFlag" v-preventReClick>
           保存
         </i-button>
       </div>
@@ -86,6 +83,10 @@
           <i-col span="3">
             <i-input v-model="order_sn" placeholder="请输入采购单号"/>
           </i-col>
+          <i-col span="2" class="label">规格型号：</i-col>
+          <i-col span="3">
+            <i-input v-model="goods_spec" placeholder="请输入规格型号"/>
+          </i-col>
           <i-col span="2" class="label">
             日期：
           </i-col>
@@ -96,7 +97,7 @@
           <i-col span="2">
             <i-button @click="searchOrder(1)">检索</i-button>
           </i-col>
-          <i-col span="10"></i-col>
+          <i-col span="8"></i-col>
         </row>
         <br>
         <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
@@ -115,6 +116,10 @@
         <i-button @click="retrievalDeliverySingle = false">关闭</i-button>
       </div>
     </Modal>
+    <Spin fix v-show="spinShow">
+      <Icon type="load-c" size="30" class="demo-spin-icon-load"></Icon>
+      <div>检索中，请稍侯...</div>
+    </Spin>
   </div>
 </template>
 <script>
@@ -126,6 +131,7 @@
 
   export default {
     props: {
+      spinShow: false,
       row: Object,
       isExpand: Boolean,
       detailsFlag: Boolean,
@@ -143,6 +149,7 @@
         isSyncFlag: true,
         isSyncShow: true,
         clickBj: false,
+        singleCOUNT:0,
         addTotalList: {
           "info": [],
         },
@@ -154,6 +161,7 @@
         wuliu_sn: '',
         urls: '',
         order_sn: '',
+        goods_spec: '',
         order_date: '',
         detailsFlag: false,
         tedayNum: 0,
@@ -201,25 +209,25 @@
             title: '门幅',
             key: 'goods_width',
             align: 'center',
-            width:65
+            width:90
           },
           {
             title: '颜色',
             key: 'goods_color',
             align: 'center',
-            // width:65
+            width:90
           },
           {
             title: '布纹',
             key: 'goods_type',
             align: 'center',
-            width:65
+            width:90
           },
           {
             title: '单位',
             key: 'goods_unit',
             align: 'center',
-            width:65
+            width:90
           },
           {
             title: '订单米数',
@@ -232,6 +240,11 @@
             key: 'depot_qty',
             align: 'center',
             // width:65
+          }, {
+            title: '待送数量',
+            key: 'Dy',
+            align: 'center',
+            // width:75
           },
           {
             title: '单卷数量',
@@ -258,6 +271,7 @@
                         params.row.song_single_qty = e
                         _this.deliveryNote[params.index] = params.row
                         _this.updateData() // 改变的时候触发一下改变数据时事件,这样只要编辑了就会获取里面的值
+                        _this.updateSingleNumber() // 单卷数据计算
                       }
                     }
                   },
@@ -315,25 +329,25 @@
             title: '门幅',
             key: 'goods_width',
             align: 'center',
-            width:65
+            width:90
           },
           {
             title: '颜色',
             key: 'goods_color',
             align: 'center',
-            // width:65
+            width:90
           },
           {
             title: '布纹',
             key: 'goods_type',
             align: 'center',
-            width:65
+            width:90
           },
           {
             title: '单位',
             key: 'goods_unit',
             align: 'center',
-            width:65
+            width:90
           },
           {
             title: '订单米数',
@@ -344,6 +358,12 @@
           {
             title: '可送货数量',
             key: 'depot_qty',
+            align: 'center',
+            // width:65
+          },
+          {
+            title: '待送货数量',
+            key: 'Dy',
             align: 'center',
             // width:65
           },
@@ -392,6 +412,7 @@
                   },
                   on: {
                     click: () => {
+
                       this.removeDelivery(params.index, params.row)
                     }
                   }
@@ -424,24 +445,25 @@
             title: '门幅',
             key: 'goods_width',
             align: 'center',
-            width:65
+            width:90
           },
           {
             title: '颜色',
             key: 'goods_color',
-            align: 'center'
+            align: 'center',
+            width:90
           },
           {
             title: '布纹',
             key: 'goods_type',
             align: 'center',
-            width:65
+            width:90
           },
           {
             title: '单位',
             key: 'goods_unit',
             align: 'center',
-            width:65
+            width:90
           },
           {
             title: '订单米数',
@@ -502,7 +524,6 @@
         page: 1,
         num: constant.pageSize,
         total: 0,
-
         checkRules: {
           contract_name: [
             {required: true, message: "送货人为必输项。", trigger: "blur"}
@@ -742,7 +763,7 @@
       //<--------------------          逻辑          -------------------->
       //将选中的订单添加到送货单表格中
       appendDeliveryList(val) {
-        if (parseFloat(val.deliver_qty) + parseFloat(val.receiv_qty) * 1.2 > parseFloat(val.amount_qty)) {
+        if (parseFloat(val.deliver_qty) + parseFloat(val.receiv_qty) > ( parseFloat(val.amount_qty)  * 1.2 ) ) {
           this.$Notice.error({
             title: '商品添加',
             desc: '在途数量和已确认数量总和超出订单米数限定。',
@@ -853,6 +874,7 @@
       },
       //检索商品
       searchOrder(page) {
+        this.spinShow = true
         this.retrievalDeliveryNote = []
         this.page = page
         let index = {}
@@ -861,6 +883,9 @@
         }
         if (this.order_date) {
           index.order_date = this.order_date
+        }
+        if (this.goods_spec) {
+          index.goods_spec = this.goods_spec
         }
         post('/index/Order/searchOrder', index).then((response) => {
           this.retrievalDeliverySingle = true
@@ -883,6 +908,7 @@
               this.tedayNum = response.song_rowno
             }
           }
+          this.spinShow = false
         }, err => {
           Common.errNotice(this, err, constant.distributorErrTitle)
         })
@@ -961,6 +987,14 @@
           Common.fnPrint(list)
         }
       },
+
+      updateSingleNumber(){
+        this.singleCOUNT = 0
+        let list = this.deliveryNote
+        for (let i = 0; i < list.length; i++) {
+            this.singleCOUNT += list[i].song_single_qty
+        }
+      }
     }
   }
   ;

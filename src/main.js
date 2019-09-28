@@ -11,6 +11,7 @@ import 'quill/dist/quill.core.css'
 import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
 import store from "./store/store";
+import plugins from "./plugins";
 import Print from 'vue-print-nb'
 
 Vue.use(Print);  //注册
@@ -19,6 +20,7 @@ Vue.config.productionTip = false
 Vue.use(iView)
 // Vue.use(VueQuillEditor)
 Vue.use(vue_resource)
+Vue.use(plugins)
 
 
 new Vue({

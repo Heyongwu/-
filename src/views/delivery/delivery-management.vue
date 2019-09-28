@@ -1,18 +1,47 @@
 <template>
   <div>
     <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
-      <i-col span="3" class="label">送货单号：</i-col>
-      <i-col span="4">
-        <i-input   v-model="wuliu_sn" placeholder="请输入送货单号"/>
-      </i-col>
-      <i-col span="3" class="label"></i-col>
-      <i-col span="4">
-      </i-col>
-      <i-col span="3" class="label"></i-col>
-      <i-col span="4">
-      </i-col>
+      <i-col span="2" class="label">送货单号：</i-col>
       <i-col span="3">
-        <i-button type="primary" @click="initialiseIndex(0,true)">检索</i-button>
+        <i-input clearable v-model="wuliu_sn" placeholder="请输入送货单号"/>
+      </i-col>
+      <i-col span="2" class="label">采购单号：</i-col>
+      <i-col span="3">
+        <i-input clearable v-model="order_sn" placeholder="请输入采购单号"/>
+      </i-col>
+      <i-col span="2" class="label">单据日期：</i-col>
+      <i-col span="3">
+        <DatePicker :clearable="false" :options="options3" type="daterange" v-model="maker_date" @on-change="sss"
+                    placeholder="请选择日期"></DatePicker>
+      </i-col>
+      <i-col span="2" class="label">当前状态：</i-col>
+      <i-col span="3">
+        <i-select v-model="status">
+          <i-option v-for="item in statuss" :value="item.code" :key="item.code">
+            {{ item.name }}
+          </i-option>
+        </i-select>
+      </i-col>
+      <i-col span="4"></i-col>
+    </row>
+    <row :gutter="16" style=" display:flex;font-size: 15px">
+      <i-col span="2" class="label">产品名称：</i-col>
+      <i-col span="3">
+        <i-input clearable v-model="goods_name" placeholder="请输入产品名称"/>
+      </i-col>
+      <i-col span="2" class="label">产品编号：</i-col>
+      <i-col span="3">
+        <i-input clearable v-model="goods_sn" placeholder="请输入产品编号"/>
+      </i-col>
+      <i-col span="2" class="label">产品规格：</i-col>
+      <i-col span="3">
+        <i-input clearable v-model="goods_spec" placeholder="请输入产品规格"/>
+      </i-col>
+      <i-col span="2" class="label"></i-col>
+      <i-col span="3">
+      </i-col>
+      <i-col span="4">
+        <i-button type="primary" @click="initialiseIndex(1,true)">检索</i-button>
       </i-col>
     </row>
     <br>
@@ -35,7 +64,10 @@
       <i-col span="2">
         <i-button type="error" class="buttonPadding" @click="deleteAllGoods">条码作废</i-button>
       </i-col>
-      <i-col span="14">&nbsp;</i-col>
+      <i-col span="2">
+        <i-button type="success" class="buttonPadding" @click="updateGoods">修改</i-button>
+      </i-col>
+      <i-col span="12">&nbsp;</i-col>
     </row>
     <br>
     <row>
@@ -48,16 +80,64 @@
         <Page :current="pageMain" :page-size="numMain" :total="totalMain" @on-change="pageChange" simple/>
       </i-col>
     </row>
-    <div style="position : absolute;top: 3%;left: 38%;color: #ff3660;width: 450px;font-size: 20px"
+    <table-expand ref="delivery"></table-expand>
+    <div style="position : absolute;top: 91%;left: 1%;color: #ff3660;width: 450px;font-size: 10px"
          v-if="isSyncShow == false">
       注意：送货单打印只能按照单个送货单进行打印。被作废的打印条码，不能作为送货条码，进行送货，否则我们有权拒收。请勿重复使用条码。
     </div>
-    <table-expand ref="delivery"></table-expand>
-
     <Spin fix v-show="spinShow">
       <Icon type="load-c" size="30" class="demo-spin-icon-load"></Icon>
       <div>检索中，请稍侯...</div>
     </Spin>
+    <Modal title="修改送货米数" :mask-closable="false" v-model="updateShow" width=50>
+      <i-form>
+        <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
+          <i-col span="4">
+            <form-item label="送货单号：" prop="wuliu_sn">
+              <i-input v-model="updateDate.wuliu_sn" placeholder="请输入送货单号" disabled/>
+            </form-item>
+          </i-col>
+          <i-col span="4">&nbsp;</i-col>
+          <i-col span="4">
+            <form-item label="分卷条码：" prop="song_person">
+              <i-input :maxlength="100" v-model="updateDate.rec_sn" disabled/>
+            </form-item>
+          </i-col>
+          <i-col span="4">&nbsp;</i-col>
+          <i-col span="5">
+            <form-item label="采购单号：" prop="song_date">
+              <i-input :maxlength="100" v-model="updateDate.order_sn" disabled/>
+            </form-item>
+          </i-col>
+          <i-col span="4">&nbsp;</i-col>
+        </row>
+        <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
+          <i-col span="4">
+            <form-item label="商品编号：" prop="wuliu_sn">
+              <i-input v-model="updateDate.goods_sn" placeholder="请输入送货单号" disabled/>
+            </form-item>
+          </i-col>
+          <i-col span="4">&nbsp;</i-col>
+          <i-col span="4">
+            <form-item label="商品名称：" prop="song_person">
+              <i-input :maxlength="100" v-model="updateDate.goods_name" placeholder="请输入送货人" disabled/>
+            </form-item>
+          </i-col>
+          <i-col span="4">&nbsp;</i-col>
+          <i-col span="5">
+            <form-item label="送货数量：" prop="song_date">
+              <i-input :maxlength="100" v-model="updateDate.song_qty" placeholder="请输入送货数量"/>
+            </form-item>
+          </i-col>
+          <i-col span="4">&nbsp;</i-col>
+        </row>
+        <br>
+      </i-form>
+      <div slot="footer">
+        <i-button @click="closeUpdate">关闭</i-button>
+        <i-button type="info" @click="songQtyClick">保存</i-button>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -76,6 +156,17 @@
     data() {
       return {
         // <--------------------          基础变量          -------------------->
+        updateShow: false,
+        status: 0,
+        statuss: [
+          {
+            "code": 0, "name": "未入库"
+          }, {
+            "code": 1, "name": "已删除"
+          }, {
+            "code": 2, "name": "已入库"
+          },
+        ],
         isSyncFlag: true,
         isSyncShow: true,
         spinShow: false,
@@ -85,21 +176,36 @@
         },
         indexClick: -1,
         allList: [],
+        serviceProviders: [],
         appendSuccessAllList: [],
         singleList: {},
         DeliveryNotes: [],
         temporaryList: [],
         addClick: false,
         wuliu_sn: '',
+        order_sn: '',
+        goods_name: '',
+        goods_sn: '',
+        goods_spec: '',
         urls: '',
+        maker_date: [new Date(), new Date()],
         // 每页显示条目个数
-        numMain: constant.pageSize,
+        // numMain: constant.pageSize,
+        numMain: 200,
         // 当前页数
         pageMain: 1,
         // 总个数
         totalMain: 0,
         tableHeight: '',
-
+        updateDate: {
+          wuliu_sn: "",
+          rec_sn: "",
+          order_sn: "",
+          goods_sn: "",
+          goods_name: "",
+          song_qty: "",
+          rec_id: "",
+        },
         //<--------------------          表格头布局          -------------------->
         columns: [],
         columns1: [
@@ -112,25 +218,30 @@
             title: '送货单位编号',
             key: 'company_sn',
             align: 'center',
-            width:135
+            width: 135
           },
           {
             title: '送货单位',
             key: 'company_name',
             align: 'center',
-            width:110
+            width: 110
           },
           {
             title: '同步',
             key: 'is_sync_name',
             align: 'center',
-            width:95
+            width: 90
           },
           {
             title: '送货单号',
             key: 'wuliu_sn',
             align: 'center',
-            width:140
+            width: 140
+          },
+          {
+            title: '采购单号',
+            key: 'order_sn',
+            align: 'center',
           },
           {
             title: '单据日期',
@@ -141,13 +252,11 @@
             title: '分卷条码',
             key: 'rec_sn',
             align: 'center',
-            width:160
           },
           {
             title: '商品编号',
             key: 'goods_sn',
             align: 'center',
-            width:110
           },
           {
             title: '商品名称',
@@ -163,31 +272,31 @@
             title: '门幅',
             key: 'goods_width',
             align: 'center',
-            width:80
+            width: 80
           },
           {
             title: '颜色',
             key: 'goods_color',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '条纹',
             key: 'remarks',
             align: 'center',
-            width:80
+            width: 80
           },
           {
             title: '送货数量',
             key: 'song_qty',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '单位',
             key: 'goods_unit',
             align: 'center',
-            width:80
+            width: 80
           },
           {
             title: '送货人',
@@ -205,13 +314,18 @@
             title: '订单状态',
             key: 'is_del_name',
             align: 'center',
-            width:140
+            width: 140
           },
           {
             title: '送货单号',
             key: 'wuliu_sn',
             align: 'center',
-            width:140
+            width: 140
+          },
+          {
+            title: '采购单号',
+            key: 'order_sn',
+            align: 'center'
           },
           {
             title: '单据日期',
@@ -221,8 +335,7 @@
           {
             title: '分卷条码',
             key: 'rec_sn',
-            align: 'center',
-            width:150
+            align: 'center'
           },
           {
             title: '商品编号',
@@ -243,31 +356,31 @@
             title: '门幅',
             key: 'goods_width',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '颜色',
             key: 'goods_color',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '条纹',
             key: 'remarks',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '送货数量',
             key: 'song_qty',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '单位',
             key: 'goods_unit',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '送货人',
@@ -285,16 +398,93 @@
       } else {
         this.columns = parseInt(Cookies.get("company_type")) === 1 ? this.columns1 : this.columns2
         this.isSyncShow = parseInt(Cookies.get("company_type")) === 1 ? true : false
-        this.tableHeight = document.documentElement.clientHeight - 340
-        this.initialiseIndex(0, false)
+        this.tableHeight = document.documentElement.clientHeight - 350
+        this.initialiseIndex(1, false)
       }
     },
     methods: {
-      //<--------------------          增删改查翻页          -------------------->
-      //初始化页面
+      sss() {
+        let start_date = Common.formatDate(this.maker_date[0], "yyyy-MM-dd")
+        let end_date = Common.formatDate(this.maker_date[1], "yyyy-MM-dd")
+        var day1 = new Date(start_date);
+        var day2 = new Date(end_date);
+        var pL = (day2 - day1) / (1000 * 60 * 60 * 24)
+        if (pL > 7) {
+          this.$Notice.error({
+            title: '日期跨度不可以超过一周',
+          });
+          this.maker_date = [new Date(), new Date()]
+        }
+      },
+      onTimeChange: function (isTime) {
+        this.options3 = {
+          disabledDate(date) {
+            return date && date.valueOf() < 604800 || date && date.valueOf() < isTime - 604800 || date && date.valueOf() > isTime + 604800;
+          }
+        }
+      },
       initialiseIndex(page, isFlage) {
+        this.spinShow = true
+        let index = {
+          "num": this.numMain,
+          "page": page,
+          "count": Cookies.get("count") === undefined ? '' : Cookies.get("count")
+        }
+        index.start_date = Common.formatDate(this.maker_date[0], "yyyyMMdd")
+        index.end_date = Common.formatDate(this.maker_date[1], "yyyyMMdd")
+        if (this.order_sn) {
+          index.order_sn = this.order_sn
+        }
+        if (this.wuliu_sn) {
+          index.wuliu_sn = this.wuliu_sn
+        }
+
+        if (this.goods_name) {
+          index.goods_name = this.goods_name
+        }
+        if (this.goods_sn) {
+          index.goods_sn = this.goods_sn
+        }
+        if (this.goods_spec) {
+          index.goods_spec = this.goods_spec
+        }
+        index.status = this.status
+        let isFlages = true
+        post('/index/Depot/getNewWuliu', index).then((response) => {
+          this.spinShow = false
+          Cookies.set("isFlage", true)
+          let lists = []
+          for (let i = 0; i < response.data.length; i++) {
+            if (parseInt(response.data[i].is_sync) === 0) {
+              response.data[i].is_sync_name = "未同步"
+              isFlages = false
+            } else if (parseInt(response.data[i].is_sync) === 1) {
+              response.data[i].is_sync_name = "同步失败"
+              isFlages = false
+            } else {
+              response.data[i].is_sync_name = parseInt(response.data[i].is_del) === 0 ? "同步成功" : "本单商品已注销"
+            }
+            response.data[i].is_del_name = parseInt(response.data[i].is_del) === 0 ? "正常" : "本单商品已注销"
+            response.data[i]._disabled = parseInt(response.data[i].is_del) === 0 ? false : true
+
+          }
+          this.isSyncFlag = isFlages
+          lists = response.data
+
+          this.totalMain = response.data.length
+          this.pageMain = page
+          this.serviceProviders = lists.slice(page * this.numMain - this.numMain , page * this.numMain );
+          // this.serviceProviders = lists
+          // this.totalMain = response.count
+          Cookies.set("count", lists.length)
+        }, err => {
+          Common.errNotice(this, err, constant.distributorErrTitle)
+        })
+      },
+      //<--------------------          增删改查翻页          -------------------->
+      initialiseIndex1(page, isFlage) {
         this.isSyncFlag = true
-        this. spinShow = true
+        this.spinShow = true
         if (isFlage) {
           Cookies.set("count", '')
           if (this.wuliu_sn) {
@@ -305,17 +495,16 @@
         } else {
           this.numMain = constant.pageSize
         }
-        if (page === 0) {
-          this.pageMain = 1
-        }
         let index = {
           "num": this.numMain,
           "page": page,
+          "status": this.status,
           "count": Cookies.get("count") === undefined ? '' : Cookies.get("count")
         }
-
+        index.start_date = Common.formatDate(this.maker_date[0], "yyyyMMdd")
+        index.end_date = Common.formatDate(this.maker_date[1], "yyyyMMdd")
         post('/index/Depot/getNewGoods', index).then((response) => {
-          this. spinShow = false
+          this.spinShow = false
           let isFlages = true
           Cookies.set("isFlage", true)
           let list = []
@@ -354,24 +543,28 @@
             list = response.data
           }
           this.isSyncFlag = isFlages
-          this.serviceProviders = list
-          if (isFlage) {
-            if (this.wuliu_sn) {
-              this.totalMain = 1
-            } else {
-              this.totalMain = response.count
-            }
-          } else {
-            this.totalMain = response.count
-          }
+          // this.serviceProviders = list
+          this.totalMain = response.data.length
+          this.pageMain = page
+          this.serviceProviders = list.slice(page * constant.pageSize - constant.pageSize, page * constant.pageSize);
           Cookies.set("count", response.count)
         }, err => {
           Common.errNotice(this, err, constant.distributorErrTitle)
         })
       },
+
+      unique1(arr) {
+        var hash = [];
+        for (var i = 0; i < arr.length; i++) {
+          if (hash.indexOf(arr[i].wuliu_id) == -1) {
+            hash.push(arr[i]);
+          }
+        }
+        return hash;
+      },
       //主页翻页
       pageChange(value) {
-        this.initialiseIndex(value - 1, false)
+        this.initialiseIndex(value, false)
       },
       rowClassName(row) {
         if (row.is_del === 1) {
@@ -503,6 +696,57 @@
         }, err => {
           Common.errNotice(this, err, constant.distributorErrTitle)
         })
+      },
+      //修改
+      updateGoods() {
+        if (this.allList.length == 1) {
+          this.updateShow = true
+          this.updateDate.wuliu_sn = this.allList[0].wuliu_sn
+          this.updateDate.rec_sn = this.allList[0].rec_sn
+          this.updateDate.order_sn = this.allList[0].order_sn
+          this.updateDate.goods_sn = this.allList[0].goods_sn
+          this.updateDate.goods_name = this.allList[0].goods_name
+          this.updateDate.rec_id = this.allList[0].rec_id
+          this.updateDate.song_qty = ''
+        } else {
+          this.$Notice.error({
+            title: '修改送货数量',
+            desc: '请单选送货单',
+          });
+        }
+      },
+      //修改后保存
+      songQtyClick() {
+        if (this.updateDate.song_qty) {
+          let params = {
+            "rec_id": this.updateDate.rec_id,
+            "song_qty": this.updateDate.song_qty,
+          }
+          post('/index/Depot/modQty', params).then((response) => {
+            if(response >0 ){
+              this.$Notice.success({
+                title: '修改送货数量',
+                desc: '修改成功',
+              });
+              this.updateShow = false
+              this.allList = []
+              this.initialiseIndex(this.page - 1)
+            }else {
+              this.$Notice.error({
+                title: '修改送货数量',
+                desc: '修改失败',
+              });
+            }
+
+          }, err => {
+            Common.errNotice(this, err, constant.distributorErrTitle)
+          })
+        }
+
+      },
+      closeUpdate(){
+        this.updateShow = false
+        this.allList = []
       },
       //商品删除多选删除
       deleteAllGoods() {

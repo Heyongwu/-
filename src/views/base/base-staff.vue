@@ -129,8 +129,8 @@
       </i-form>
       <div slot="footer">
         <i-button @click="staffSingle = false">取消</i-button>
-        <i-button v-if="this.title === '新增公司'" type="primary" @click="createSubmit('add')">保存</i-button>
-        <i-button v-else type="primary" @click="createSubmit('update')">保存</i-button>
+        <i-button v-if="this.title === '新增公司'" type="primary" @click="createSubmit('add')" v-preventReClick>保存</i-button>
+        <i-button v-else type="primary" @click="createSubmit('update')" v-preventReClick>保存</i-button>
       </div>
     </Modal>
     <Spin fix v-show="spinShow">

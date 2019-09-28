@@ -29,7 +29,7 @@
     </row>
     <row>
       <i-col span="24" style="text-align: center">
-        <Page :current="pageNum" :page-size="pageSize" :total="total" @on-change="pageChange" simple/>
+        <Page :current="page" :page-size="num" :total="total" @on-change="pageChange" simple/>
       </i-col>
     </row>
     <Spin fix v-show="spinShow">
@@ -59,15 +59,13 @@
         loading: true,
         spinShow: true,
         // 每页显示条目个数
-        pageSize: constant.pageSize,
-        // 当前页数
-        pageNum: 0,
+        num: constant.pageSize,
         // 总个数
         total: 0,
         serviceProviderSingle: false,
         retrievalDeliverySingle: false,
         tableHeight: '',
-        page: '',
+        page:0,
         title: '',
         files: '',
         serverUrl: baseURL.releaseIP + '/common/picture_temp_oss',
@@ -171,10 +169,10 @@
       //初始化页面
       initialiseIndex(page) {
         this.spinShow = true
-        this.pageSize = page + 1
+        this.page = page + 1
         let index = {
-          "page_size": page,
-          "page_no": this.pageNum
+          "page": page,
+          "num": this.num
         }
         if (this.goods_sn) {
           index.goods_sn = this.goods_sn

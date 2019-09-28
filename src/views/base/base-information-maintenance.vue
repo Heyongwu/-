@@ -63,7 +63,7 @@
       </i-form>
       <div slot="footer">
         <i-button @click="restPassword = false">取消</i-button>
-        <i-button type="primary" @click="updatePassword()">保存</i-button>
+        <i-button type="primary" @click="updatePassword()" v-preventReClick>保存</i-button>
       </div>
     </Modal>
   </div>
