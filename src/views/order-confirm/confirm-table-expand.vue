@@ -104,32 +104,7 @@
         end_date: '',
         counts: 0,
         //<--------------------          表格头布局          -------------------->
-        columnsCurriculum: [
-          {
-            title: '机台编码',
-            key: 'mac_id',
-            align: 'center'
-          }, {
-            title: '机台名称',
-            key: 'mac_sn',
-            align: 'center'
-          },
-          {
-            title: '生产开始时间',
-            key: 'plan_begin',
-            align: 'center'
-          },
-          {
-            title: '生产结束时间',
-            key: 'plan_end',
-            align: 'center'
-          },
-          {
-            title: '生产数量',
-            key: 'plan_qty',
-            align: 'center'
-          }
-        ],
+
         serviceProviders: [],
         columns1: [
           {
@@ -497,7 +472,6 @@
             title: '生产数量超出',
             desc: "本次计划数量不能超出总数！ " + '<br>' + " 当前可计划总数：" + difference
           });
-
         }
       },
       createSubmit() {

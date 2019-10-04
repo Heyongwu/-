@@ -65,7 +65,7 @@
         <i-button type="error" class="buttonPadding" @click="deleteAllGoods">条码作废</i-button>
       </i-col>
       <i-col span="2">
-        <i-button type="success" class="buttonPadding" @click="updateGoods">修改</i-button>
+        <i-button type="success" class="buttonPadding" @click="updateGoods">修&nbsp;&nbsp;&nbsp;&nbsp;改</i-button>
       </i-col>
       <i-col span="12">&nbsp;</i-col>
     </row>
@@ -190,8 +190,7 @@
         urls: '',
         maker_date: [new Date(), new Date()],
         // 每页显示条目个数
-        // numMain: constant.pageSize,
-        numMain: 200,
+        numMain: constant.pageSize,
         // 当前页数
         pageMain: 1,
         // 总个数
@@ -403,6 +402,7 @@
       }
     },
     methods: {
+      //判断日期是否超出
       sss() {
         let start_date = Common.formatDate(this.maker_date[0], "yyyy-MM-dd")
         let end_date = Common.formatDate(this.maker_date[1], "yyyy-MM-dd")
@@ -423,6 +423,7 @@
           }
         }
       },
+      //<--------------------          增删改查翻页          -------------------->
       initialiseIndex(page, isFlage) {
         this.spinShow = true
         let index = {
@@ -473,86 +474,12 @@
 
           this.totalMain = response.data.length
           this.pageMain = page
-          this.serviceProviders = lists.slice(page * this.numMain - this.numMain , page * this.numMain );
-          // this.serviceProviders = lists
-          // this.totalMain = response.count
+          this.serviceProviders = lists.slice(page * this.numMain - this.numMain, page * this.numMain);
           Cookies.set("count", lists.length)
         }, err => {
           Common.errNotice(this, err, constant.distributorErrTitle)
         })
       },
-      //<--------------------          增删改查翻页          -------------------->
-      initialiseIndex1(page, isFlage) {
-        this.isSyncFlag = true
-        this.spinShow = true
-        if (isFlage) {
-          Cookies.set("count", '')
-          if (this.wuliu_sn) {
-            this.numMain = 500000
-          } else {
-            this.numMain = constant.pageSize
-          }
-        } else {
-          this.numMain = constant.pageSize
-        }
-        let index = {
-          "num": this.numMain,
-          "page": page,
-          "status": this.status,
-          "count": Cookies.get("count") === undefined ? '' : Cookies.get("count")
-        }
-        index.start_date = Common.formatDate(this.maker_date[0], "yyyyMMdd")
-        index.end_date = Common.formatDate(this.maker_date[1], "yyyyMMdd")
-        post('/index/Depot/getNewGoods', index).then((response) => {
-          this.spinShow = false
-          let isFlages = true
-          Cookies.set("isFlage", true)
-          let list = []
-          if (this.wuliu_sn) {
-            for (let i = 0; i < response.data.length; i++) {
-              if (parseInt(response.data[i].is_sync) === 0) {
-                isFlages = false
-                response.data[i].is_sync_name = "未同步"
-              } else if (parseInt(response.data[i].is_sync) === 1) {
-                isFlages = false
-                response.data[i].is_sync_name = "同步失败"
-              } else {
-                response.data[i].is_sync_name = parseInt(response.data[i].is_del) === 0 ? "同步成功" : "本单商品已注销"
-              }
-              response.data[i].is_del = parseInt(response.data[i].is_del) === 0 ? "正常" : "本单商品已注销"
-              response.data[i]._disabled = parseInt(response.data[i].is_del) === 0 ? false : true
-              if (this.wuliu_sn == response.data[i].wuliu_sn) {
-                list.push(response.data[i])
-              }
-            }
-          } else {
-            for (let i = 0; i < response.data.length; i++) {
-              if (parseInt(response.data[i].is_sync) === 0) {
-                isFlages = false
-                response.data[i].is_sync_name = "未同步"
-              } else if (parseInt(response.data[i].is_sync) === 1) {
-                isFlages = false
-                response.data[i].is_sync_name = "同步失败"
-              } else {
-                response.data[i].is_sync_name = parseInt(response.data[i].is_del) === 0 ? "同步成功" : "本单商品已注销"
-              }
-              response.data[i].is_del_name = parseInt(response.data[i].is_del) === 0 ? "正常" : "本单商品已注销"
-              response.data[i]._disabled = parseInt(response.data[i].is_del) === 0 ? false : true
-
-            }
-            list = response.data
-          }
-          this.isSyncFlag = isFlages
-          // this.serviceProviders = list
-          this.totalMain = response.data.length
-          this.pageMain = page
-          this.serviceProviders = list.slice(page * constant.pageSize - constant.pageSize, page * constant.pageSize);
-          Cookies.set("count", response.count)
-        }, err => {
-          Common.errNotice(this, err, constant.distributorErrTitle)
-        })
-      },
-
       unique1(arr) {
         var hash = [];
         for (var i = 0; i < arr.length; i++) {
@@ -686,7 +613,7 @@
               title: '同步MES',
               desc: "同步MES成功",
             });
-            this.initialiseIndex(this.page - 1)
+            this.initialiseIndex(this.pageMain)
           } else {
             this.$Notice.error({
               title: '同步MES',
@@ -723,15 +650,15 @@
             "song_qty": this.updateDate.song_qty,
           }
           post('/index/Depot/modQty', params).then((response) => {
-            if(response >0 ){
+            if (response > 0) {
               this.$Notice.success({
                 title: '修改送货数量',
                 desc: '修改成功',
               });
               this.updateShow = false
               this.allList = []
-              this.initialiseIndex(this.page - 1)
-            }else {
+              this.initialiseIndex(this.pageMain)
+            } else {
               this.$Notice.error({
                 title: '修改送货数量',
                 desc: '修改失败',
@@ -744,7 +671,7 @@
         }
 
       },
-      closeUpdate(){
+      closeUpdate() {
         this.updateShow = false
         this.allList = []
       },
@@ -777,7 +704,7 @@
                     title: '产品作废',
                     desc: response.msg,
                   });
-                  this.initialiseIndex(this.page - 1)
+                  this.initialiseIndex(this.pageMain)
                 } else {
                   this.$Notice.error({
                     title: '产品作废',

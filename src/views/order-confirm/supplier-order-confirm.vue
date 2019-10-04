@@ -3,11 +3,11 @@
     <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
       <i-col span="3" class="label">订单号编号：</i-col>
       <i-col span="4">
-        <i-input v-model="order_sn" placeholder="请输入采购订单号"/>
+        <i-input clearable v-model="order_sn" placeholder="请输入采购订单号"/>
       </i-col>
-      <i-col span="3" class="label">单据日期：</i-col>
+      <i-col span="3" class="label">规格型号：</i-col>
       <i-col span="4">
-        <DatePicker type="daterange" v-model="order_date" placeholder="请输入单据日期" style="width: 200px"></DatePicker>
+        <i-input clearable v-model="goods_spec" placeholder="请输入规格型号"/>
       </i-col>
       <i-col span="3" class="label">确认状态：</i-col>
       <i-col span="4">
@@ -22,19 +22,20 @@
     <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
       <i-col span="3" class="label">排产状态：</i-col>
       <i-col span="4">
-        <i-select clearable  v-model="plan_status">
+        <i-select clearable v-model="plan_status">
           <i-option v-for="item in plan_statuss" :value="item.code" :key="item.code">{{ item.name }}
           </i-option>
         </i-select>
       </i-col>
-      <i-col span="3" class="label"></i-col>
+      <i-col span="3" class="label">单据日期：</i-col>
       <i-col span="4">
+        <DatePicker :clearable="false" @on-change="sss" type="daterange" v-model="order_date" placeholder="请输入单据日期" style="width: 200px"></DatePicker>
       </i-col>
       <i-col span="3" class="label"></i-col>
       <i-col span="4">
       </i-col>
       <i-col span="3">
-        <i-button type="primary" @click="initialiseIndex(0)">检索</i-button>
+        <i-button type="primary" @click="initialiseIndex(1)">检索</i-button>
       </i-col>
     </row>
     <row :gutter="16"  >
@@ -180,10 +181,11 @@
         retrievalDeliverySingle: false,
         spinShow: false,
         order_sn: '',
+        goods_spec: '',
         retrievalDeliveryNote: [],
         retrievalTableHeight: '',
         header: {token: ''},
-        order_date: '',
+        order_date: [new Date(), new Date()],
         other_party_name: '',
         contract_name: '',
         name: '',
@@ -218,10 +220,6 @@
         //<--------------------          表格头布局          -------------------->
         columns: [
           {
-            title: '行号',
-            key: 'order_id',
-            align: 'center'
-          }, {
             title: '订单编号',
             key: 'order_sn',
             align: 'center'
@@ -244,17 +242,109 @@
             key: 'company_name',
             align: 'center'
           },
+
           {
-            title: '操作',
-            type: 'expand',
+            title: '商品编码',
+            key: 'goods_sn',
+            align: 'center'
+          },
+          {
+            title: '商品名称',
+            key: 'goods_name',
+            align: 'center'
+          },
+          {
+            title: '规格型号',
+            key: 'goods_spec',
+            align: 'center'
+          },
+          {
+            title: '幅宽',
+            key: 'goods_width',
+            align: 'center'
+          },
+          {
+            title: '颜色',
+            key: 'goods_color',
+            align: 'center'
+          },
+          {
+            title: '布纹',
+            key: 'goods_type',
+            align: 'center'
+          },
+          {
+            title: '单位',
+            key: 'goods_unit',
+            align: 'center'
+          },
+          {
+            title: '订单数量',
+            key: 'amount_qty',
+            align: 'center'
+          },
+          {
+            title: '计划数量',
+            key: 'plan_qty',
             align: 'center',
             render: (h, params) => {
-              return h(TableExpand, {
-                props: {
-                  row: params.row.order_id,
-                  type: 2
+              this.keysRecId = params.row.rec_id
+              return h('a', {
+                attrs: {},
+                on: {
+                  click: () => {
+                    this.fourCurriculum(params.row.rec_id,0)
+                  }
                 }
-              }, "查看")
+              }, params.row.plan_qty)
+            }
+          },
+          {
+            title: '在途数量',
+            key: 'deliver_qty',
+            align: 'center'
+          },
+          {
+            title: '已确认数量',
+            key: 'receiv_qty',
+            align: 'center'
+          },
+          {
+            title: '商品状态',
+            key: 'confirm_status',
+            align: 'center',
+            render: (h, params) => {
+              if (params.row.confirm_status == 0) {
+                return h('div', [
+                  h(
+                    "span", {
+                      props: {
+                        value: params.row.taxprice,
+                        transfer: true,  //select不受body显示，以免显示不出来
+                      }
+                    },
+                  ), "未确认"]);
+              } else if (params.row.confirm_status == 1) {
+                return h('div', [
+                  h(
+                    "span", {
+                      props: {
+                        value: params.row.taxprice,
+                        transfer: true,  //select不受body显示，以免显示不出来
+                      }
+                    },
+                  ), "已驳回"]);
+              } else {
+                return h('div', [
+                  h(
+                    "span", {
+                      props: {
+                        value: params.row.taxprice,
+                        transfer: true,  //select不受body显示，以免显示不出来
+                      }
+                    },
+                  ), "已确认"]);
+              }
             }
           }
         ],
@@ -476,15 +566,33 @@
       } else {
         this.tableHeight = document.documentElement.clientHeight - 350
         this.tableHeightLis = document.documentElement.clientHeight - 450
-        this.initialiseIndex(0)
+        this.initialiseIndex(1)
       }
     },
     methods: {
       //<--------------------          增删改查翻页          -------------------->
+      //页面每天添加履历
+      fourCurriculum(plan_id,page) {
+        if (page === 0) {
+          this.pageSon = 1
+        }
+        let params = {
+          page: page,
+          num: this.numSon,
+          rec_id: plan_id
+        }
+        post('/index/Produce/getPlan', params).then((response) => {
+          this.productionPlanningCurriculumFlag = true
+          this.Curriculum = response.data
+          this.totalSon = response.count
+        }, err => {
+          Common.errNotice(this, err, constant.distributorErrTitle)
+        })
+      },
       //初始化页面
       initialiseIndex(page) {
         this.spinShow = true
-        this.pageMax = page + 1
+        this.pageMax = page
         let index = {
           "num": this.numMax,
           "page": page
@@ -502,17 +610,38 @@
           index.start_date = Common.formatDate(this.order_date[0], "yyyy-MM-dd")
           index.end_date = Common.formatDate(this.order_date[1], "yyyy-MM-dd")
         }
-        post('/index/Order/getOrder', index).then((response) => {
-          this.spinShow = false
-          this.totalMax = response.count
-          this.serviceProviders = response.data
+        post('/index/Order/getNewOrder', index).then((response) => {
+          if(response === 0){
+            this.spinShow = false
+            // this.totalMax = response.count
+            // this.serviceProviders = response.data
+            this.totalMax = 0
+            this.pageMax = page
+            this.serviceProviders = []
+          }else{
+            this.spinShow = false
+            let list = []
+            if(this.goods_spec){
+              for (let i = 0; i < response.data.length; i++) {
+                if(this.goods_spec == response.data[i].goods_spec){
+                  list.push(response.data[i])
+                }
+              }
+              response.data = list
+            }
+            // this.totalMax = response.count
+            // this.serviceProviders = response.data
+            this.totalMax = response.data.length
+            this.pageMax = page
+            this.serviceProviders = response.data.slice(page * this.numMax - this.numMax, page * this.numMax);
+          }
         }, err => {
           Common.errNotice(this, err, constant.distributorErrTitle)
         })
       },
 
       pageChange(value) {
-        this.initialiseIndex(value - 1)
+        this.initialiseIndex(value)
       },
       addServiceProviders() {
         post('/index/Company/getCompany').then((response) => {
@@ -654,7 +783,7 @@
               desc: params.order_sn + ' 采购单新增成功！',
             });
             this.configSingle = false
-            this.initialiseIndex(0)
+            this.initialiseIndex(1)
           }
         }, err => {
           Common.errNotice(this, err, constant.distributorErrTitle)
@@ -684,7 +813,20 @@
         this.orders_config_manage.supplier = ''
         this.orders_config_manage.remark = ''
         this.configNote = []
-      }
+      },
+      sss() {
+        let start_date = Common.formatDate(this.order_date[0], "yyyy-MM-dd")
+        let end_date = Common.formatDate(this.order_date[1], "yyyy-MM-dd")
+        var day1 = new Date(start_date);
+        var day2 = new Date(end_date);
+        var pL = (day2 - day1) / (1000 * 60 * 60 * 24)
+        if (pL > 30) {
+          this.$Notice.error({
+            title: '日期跨度不可以超过一月',
+          });
+          this.order_date = [new Date(), new Date()]
+        }
+      },
     }
   }
 </script>
