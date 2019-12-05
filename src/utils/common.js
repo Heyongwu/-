@@ -213,42 +213,42 @@ export default {
         var nowheight = 32 + count;
         var left = 12;
         var lleft = 70;
-        LODOP.ADD_PRINT_IMAGE(73 + count, 17, 80, 80, '<img src= "' + rowDataList[k].img + '" style="width: 60px;height: 60px;"/> ');
+        LODOP.ADD_PRINT_IMAGE(60 + count, 5, 100, 100, '<img src= "' + rowDataList[k].img + '" style="width: 80px;height: 80px;"/> ');
         LODOP.SET_PRINT_STYLEA(0, "DataCharset", "UTF-8");
         LODOP.ADD_PRINT_TEXT(6 + count, 10, 238, 25, "浙江联翔智能家居股份有限公司");
         LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
         LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
         nowheight = 77 + count;
         LODOP.ADD_PRINT_TEXT(nowheight, 97, 55, 20, "批号：");
-        LODOP.ADD_PRINT_TEXT(nowheight, 152, 100, 20, rowDataList[k].maker_date);
+        LODOP.ADD_PRINT_TEXT(nowheight, 132, 100, 20, rowDataList[k].maker_date);
         nowheight += rowHeight;
         LODOP.ADD_PRINT_TEXT(nowheight, 97, 55, 20, "门幅：");
-        LODOP.ADD_PRINT_TEXT(nowheight, 152, 100, 20, rowDataList[k].goods_width);
+        LODOP.ADD_PRINT_TEXT(nowheight, 132, 100, 20, rowDataList[k].goods_width);
         nowheight += rowHeight;
         LODOP.ADD_PRINT_TEXT(nowheight, 97, 55, 20, "布纹：");
-        LODOP.ADD_PRINT_TEXT(nowheight, 151, 100, 20, rowDataList[k].cInvBw);
+        LODOP.ADD_PRINT_TEXT(nowheight, 132, 100, 20, rowDataList[k].goods_type);
         nowheight = 32;
         LODOP.ADD_PRINT_TEXT(nowheight, left, 48, 20, "名称：");
         LODOP.ADD_PRINT_TEXT(nowheight, 54, 104, 20, rowDataList[k].goods_name);
-        LODOP.ADD_PRINT_TEXT(nowheight, 150, 50, 20, "颜色：");
-        LODOP.ADD_PRINT_TEXT(nowheight, 194, 90, 20, rowDataList[k].goods_color);
+        LODOP.ADD_PRINT_TEXT(nowheight, 130, 50, 20, "颜色：");
+        LODOP.ADD_PRINT_TEXT(nowheight, 170, 90, 20, rowDataList[k].goods_color);
         nowheight += rowHeight;
         LODOP.ADD_PRINT_TEXT(nowheight, left, 79, 20, "规格型号：");
         LODOP.ADD_PRINT_TEXT(nowheight, lleft, 90, 20, rowDataList[k].goods_spec);
-        LODOP.ADD_PRINT_TEXT(nowheight, 150, 50, 20, "米数：");
-        LODOP.ADD_PRINT_TEXT(nowheight, 194, 90, 20, rowDataList[k].song_qty);
+        LODOP.ADD_PRINT_TEXT(nowheight, 130, 50, 20, "米数：");
+        LODOP.ADD_PRINT_TEXT(nowheight, 170, 90, 20, rowDataList[k].song_qty);
         nowheight = 140;
         LODOP.ADD_PRINT_TEXT(nowheight, left, 79, 20, "采购订单：");
-        LODOP.ADD_PRINT_TEXT(nowheight, lleft, 181, 20, rowDataList[k].wuliu_sn);
+        LODOP.ADD_PRINT_TEXT(nowheight, lleft, 160, 20, rowDataList[k].order_sn);
         nowheight += rowHeight;
         LODOP.ADD_PRINT_TEXT(nowheight, left, 62, 20, "条码：");
-        LODOP.ADD_PRINT_TEXT(nowheight, lleft, 183, 20, rowDataList[k].rec_sn);
+        LODOP.ADD_PRINT_TEXT(nowheight, 50, 160, 20, rowDataList[k].rec_sn);
         nowheight += rowHeight;
-        LODOP.ADD_PRINT_TEXT(nowheight, left, 69, 20, "进货时间：")
-        LODOP.ADD_PRINT_TEXT(nowheight, lleft, 183, 20, rowDataList[k].order_date);
+        LODOP.ADD_PRINT_TEXT(nowheight, left, 69, 20, "送货时间：")
+        LODOP.ADD_PRINT_TEXT(nowheight, lleft, 160, 20, rowDataList[k].song_date);
         nowheight += rowHeight;
-        LODOP.ADD_PRINT_TEXT(nowheight, left, 69, 20, "送货人：")
-        LODOP.ADD_PRINT_TEXT(nowheight, lleft, 183, 20, rowDataList[k].song_person);
+        LODOP.ADD_PRINT_TEXT(nowheight, left, 69, 20, "供应商：")
+        LODOP.ADD_PRINT_TEXT(nowheight, 60, 160, 20, rowDataList[k].company_name);
         nowheight += rowHeight;
         LODOP.PRINT();
         // LODOP.PREVIEW();
@@ -257,7 +257,8 @@ export default {
   },
   //打印送货单
   fnPrint(rowDataList) {
-    // console.log(JSON.stringify(rowDataList))
+    console.log(JSON.stringify(rowDataList))
+    var sumIndex = 0
     for (var i = 0; i < rowDataList.length; i++) {
       var whichOne = 'jx';  //模板
       let LODOP = getLodop();
@@ -318,39 +319,47 @@ export default {
       LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 0.2 + "mm", rowBeginTop + "mm", left + 154.1 + "mm", 0, 1);
       rowBeginTop += rowHeight;
       //动态列表信息
+
+
       var trheight = 37.32;//用于每个竖线距离上面的固定长度
       var thHeight = 39;//用于每行商品距离上面的固定长度
       var newHeight = 0;//用于动态增加一行的长度
-      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 1 + "mm", "9.55mm", "5.37mm", 1);
-      LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
-      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 3.48 + "mm", "37.07mm", "5.37mm", rowDataList[i].data[0].OrderSn);
-      LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
-      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 32.48 + "mm", "37.07mm", "5.37mm", rowDataList[i].data[0].cInvCode);
-      LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
-      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 60.79 + "mm", "35.48mm", "5.37mm", rowDataList[i].data[0].cInvName);
-      LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
-      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 88.71 + "mm", "34.69mm", "5.37mm", rowDataList[i].data[0].cInvStd);
-      LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
-      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 117.37 + "mm", "11.93mm", "5.37mm", rowDataList[i].data[0].cComUnitName);
-      LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
-      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 129.49 + "mm", "26.48mm", "5.37mm", rowDataList[i].data[0].iQuantity);
-      LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
-      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 0.2 + "mm", trheight + newHeight + rowHeight + "mm", left + 0.2 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 9 + "mm", trheight + newHeight + rowHeight + "mm", left + 9 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 35.7 + "mm", trheight + newHeight + rowHeight + "mm", left + 35.7 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 65.79 + "mm", trheight + newHeight + rowHeight + "mm", left + 65.79 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 90.7 + "mm", trheight + newHeight + rowHeight + "mm", left + 90.7 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 117 + "mm", trheight + newHeight + rowHeight + "mm", left + 117 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 127.8 + "mm", trheight + newHeight + rowHeight + "mm", left + 127.8 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 154.2 + "mm", trheight + newHeight + rowHeight + "mm", left + 154.2 + "mm", 0, 1);
-      LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 0.2 + "mm", rowBeginTop + "mm", left + 154.1 + "mm", 0, 1);
-      rowBeginTop += rowHeight;
-      newHeight += rowHeight;
+      for (let j = 0; j < rowDataList[i].data.length; j++) {
+        sumIndex += rowDataList[i].data[j].iQuantity
+        LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 1 + "mm", "9.55mm", "5.37mm", j + 1);
+        LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+        LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 3.48 + "mm", "37.07mm", "5.37mm", rowDataList[i].data[j].OrderSn);
+        LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+        LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 32.48 + "mm", "37.07mm", "5.37mm", rowDataList[i].data[j].cInvCode);
+        LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+        LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 60.79 + "mm", "35.48mm", "5.37mm", rowDataList[i].data[j].cInvName);
+        LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+        LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 88.71 + "mm", "34.69mm", "5.37mm", rowDataList[i].data[j].cInvStd);
+        LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+        LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 117.37 + "mm", "11.93mm", "5.37mm", rowDataList[i].data[j].cComUnitName);
+        LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+        LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 129.49 + "mm", "26.48mm", "5.37mm", rowDataList[i].data[j].iQuantity);
+        LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+        LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 0.2 + "mm", trheight + newHeight + rowHeight + "mm", left + 0.2 + "mm", 0, 1);
+        LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 9 + "mm", trheight + newHeight + rowHeight + "mm", left + 9 + "mm", 0, 1);
+        LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 35.7 + "mm", trheight + newHeight + rowHeight + "mm", left + 35.7 + "mm", 0, 1);
+        LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 65.79 + "mm", trheight + newHeight + rowHeight + "mm", left + 65.79 + "mm", 0, 1);
+        LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 90.7 + "mm", trheight + newHeight + rowHeight + "mm", left + 90.7 + "mm", 0, 1);
+        LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 117 + "mm", trheight + newHeight + rowHeight + "mm", left + 117 + "mm", 0, 1);
+        LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 127.8 + "mm", trheight + newHeight + rowHeight + "mm", left + 127.8 + "mm", 0, 1);
+        LODOP.ADD_PRINT_LINE(trheight + newHeight + "mm", left + 154.2 + "mm", trheight + newHeight + rowHeight + "mm", left + 154.2 + "mm", 0, 1);
+        LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 0.2 + "mm", rowBeginTop + "mm", left + 154.1 + "mm", 0, 1);
+        rowBeginTop += rowHeight;
+        newHeight += rowHeight;
+      }
+
       table_hegth = trheight + newHeight + rowHeight;
+
+
       //---------------合计----------------------------------------------------------------------------
       LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 1.69 + "mm", "127.8mm", "5.37mm", "合计");
       LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
-      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 129.49 + "mm", "26.48mm", "5.37mm", parseFloat(rowDataList[i].data[0].iQuantity).toFixed(2));
+      LODOP.ADD_PRINT_TEXT(thHeight + newHeight + "mm", left + 129.49 + "mm", "26.48mm", "5.37mm", parseFloat(sumIndex).toFixed(2));
       LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
       LODOP.ADD_PRINT_LINE(rowBeginTop + "mm", left + 0.2 + "mm", rowBeginTop + "mm", left + 154.1 + "mm", 0, 1);//每条数据后加一横线
 

@@ -65,7 +65,7 @@
         <i-button type="error" class="buttonPadding" @click="deleteAllGoods">条码作废</i-button>
       </i-col>
       <i-col span="2">
-        <i-button type="success" class="buttonPadding" @click="updateGoods">修&nbsp;&nbsp;&nbsp;&nbsp;改</i-button>
+        <i-button type="success" class="buttonPadding" @click="updateGoods" v-show="disabledUpdate">修&nbsp;&nbsp;&nbsp;&nbsp;改</i-button>
       </i-col>
       <i-col span="12">&nbsp;</i-col>
     </row>
@@ -113,7 +113,7 @@
         </row>
         <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
           <i-col span="4">
-            <form-item label="商品编号：" prop="wuliu_sn">
+            <form-item label="商品编号：" prop="goods_sn">
               <i-input v-model="updateDate.goods_sn" placeholder="请输入送货单号" disabled/>
             </form-item>
           </i-col>
@@ -157,6 +157,7 @@
       return {
         // <--------------------          基础变量          -------------------->
         updateShow: false,
+        disabledUpdate: true,
         status: 0,
         statuss: [
           {
@@ -398,6 +399,15 @@
         this.columns = parseInt(Cookies.get("company_type")) === 1 ? this.columns1 : this.columns2
         this.isSyncShow = parseInt(Cookies.get("company_type")) === 1 ? true : false
         this.tableHeight = document.documentElement.clientHeight - 350
+        var now = new Date();
+        var nowTime = now.getTime();
+        // var day = now.getDay();
+        var oneDayLong = 24 * 60 * 60 * 1000;
+        var MondayTime = nowTime - (7) * oneDayLong;
+        // var SundayTime = nowTime + (7 - day) * oneDayLong;
+        var monday = new Date(MondayTime);
+        // var sunday = new Date(SundayTime);
+        this.maker_date = [monday, now]
         this.initialiseIndex(1, false)
       }
     },
@@ -413,7 +423,15 @@
           this.$Notice.error({
             title: '日期跨度不可以超过一周',
           });
-          this.maker_date = [new Date(), new Date()]
+          var now = new Date();
+          var nowTime = now.getTime();
+          // var day = now.getDay();
+          var oneDayLong = 24 * 60 * 60 * 1000;
+          var MondayTime = nowTime - (7) * oneDayLong;
+          // var SundayTime = nowTime + (7 - day) * oneDayLong;
+          var monday = new Date(MondayTime);
+          // var sunday = new Date(SundayTime);
+          this.maker_date = [monday, now]
         }
       },
       onTimeChange: function (isTime) {
@@ -425,29 +443,38 @@
       },
       //<--------------------          增删改查翻页          -------------------->
       initialiseIndex(page, isFlage) {
+        let flag = true
         this.spinShow = true
         let index = {
           "num": this.numMain,
           "page": page,
           "count": Cookies.get("count") === undefined ? '' : Cookies.get("count")
         }
-        index.start_date = Common.formatDate(this.maker_date[0], "yyyyMMdd")
-        index.end_date = Common.formatDate(this.maker_date[1], "yyyyMMdd")
+
         if (this.order_sn) {
+          flag = false
           index.order_sn = this.order_sn
         }
         if (this.wuliu_sn) {
+          flag = false
           index.wuliu_sn = this.wuliu_sn
         }
 
         if (this.goods_name) {
+          flag = false
           index.goods_name = this.goods_name
         }
         if (this.goods_sn) {
+          flag = false
           index.goods_sn = this.goods_sn
         }
         if (this.goods_spec) {
+          flag = false
           index.goods_spec = this.goods_spec
+        }
+        if (flag) {
+          index.start_date = Common.formatDate(this.maker_date[0], "yyyyMMdd")
+          index.end_date = Common.formatDate(this.maker_date[1], "yyyyMMdd")
         }
         index.status = this.status
         let isFlages = true
@@ -524,17 +551,17 @@
       },
       //初始化的打印
       printBarcode() {
-        if (this.allList.length == 0) {
-          this.$Notice.error({
+        let _this = this
+        if (_this.allList.length == 0) {
+          _this.$Notice.error({
             title: '请选择要打印的条码',
           });
         } else {
-
-          for (let i = 0; i < this.allList.length; i++) {
-            this.allList[i].img = this.qrcode(this.allList[i].rec_sn)
-            this.allList[i].maker_date = this.newDate()
+          for (let i = 0; i < _this.allList.length; i++) {
+            this.allList[i].img = _this.qrcode(_this.allList[i].rec_sn)
+            this.allList[i].maker_date = _this.newDate()
           }
-          Common.clickPrint(this.allList)
+          Common.clickPrint(_this.allList)
         }
       },
       //当前时间
@@ -548,22 +575,24 @@
       },
       //打印
       printDeliveryNote() {
+        let _this = this
         let list = []
-        if (this.allList.length == 0) {
-          this.$Notice.error({
+        if (_this.allList.length == 0) {
+          _this.$Notice.error({
             title: '请选择要打印的送货单',
           });
         } else {
-          let o = this.allList
+          let o = _this.allList
           for (let i = 0; i < o.length; i++) {
+            console.log(JSON.stringify(list))
             let lists = {}
             let listsmall = []
             let listssmall = {}
             if (list.length == 0) {
-              lists.IMG = this.qrcode(o[i].wuliu_sn)
+              lists.IMG = _this.qrcode(o[i].wuliu_sn)
               lists.PuCode = o[i].wuliu_sn
               lists.dDate = o[i].order_date
-              lists.nowdate = Common.formatDate(new Date(), "yyyy:MM:hh");
+              lists.nowdate = Common.formatDate(new Date(),"yyyy-MM-dd");
               lists.shPerson = o[i].song_person
               lists.shDate = o[i].song_date
               listssmall.cInvCode = o[i].goods_sn
@@ -579,15 +608,34 @@
               let Flag = true
               for (let j = 0; j < list.length; j++) {
                 if (o[i].wuliu_sn === list[j].PuCode) {
+                  let FlagSmall = false
+                  let KK = 0
+                  for (let k = 0; k < list[j].data.length; k++) {
+                    if( o[i].goods_spec == list[j].data[k].cInvStd) {
+                      FlagSmall = true
+                      KK = k
+                      break;
+                    }
+                  }
+                  if(FlagSmall){
+                    list[j].data[KK].iQuantity = parseFloat(o[i].song_qty) + parseFloat(list[j].data[KK].iQuantity)
+                  }else{
+                    listssmall.cInvCode = o[i].goods_sn
+                    listssmall.cInvName = o[i].goods_name
+                    listssmall.cComUnitName = o[i].goods_unit
+                    listssmall.cInvStd = o[i].goods_spec
+                    listssmall.iQuantity = o[i].song_qty
+                    listssmall.OrderSn = o[i].order_sn
+                    list[j].data.push(listssmall)
+                  }
                   Flag = false
-                  list[j].data[0].iQuantity = parseFloat(o[i].song_qty) + parseFloat(list[j].data[0].iQuantity)
                 }
               }
               if (Flag) {
-                lists.IMG = this.qrcode(o[i].wuliu_sn)
+                lists.IMG = _this.qrcode(o[i].wuliu_sn)
                 lists.PuCode = o[i].wuliu_sn
                 lists.dDate = o[i].order_date
-                lists.nowdate = Common.formatDate(new Date(), "yyyy:MM:hh");
+                lists.nowdate = Common.formatDate(new Date(), "yyyy-MM-dd");
                 lists.shPerson = o[i].song_person
                 lists.shDate = o[i].song_date
                 listssmall.cInvCode = o[i].goods_sn
@@ -717,9 +765,20 @@
             }
           })
         }
-
       },
-    }
+    },
+    watch: {
+      //监听按钮
+      status() {
+        if (this.status === 0) {
+          this.disabledUpdate = true
+          this.initialiseIndex(1, true)
+        } else {
+          this.disabledUpdate = false
+          this.initialiseIndex(1, true)
+        }
+      },
+    },
   }
 </script>
 

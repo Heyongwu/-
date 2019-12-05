@@ -3,11 +3,11 @@
     <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
       <i-col span="3" class="label">订单号编号：</i-col>
       <i-col span="4">
-        <i-input clearable v-model="order_sn" placeholder="请输入采购订单号"/>
+        <i-input clearable v-model="order_sn" placeholder="请输入采购订单号" @on-enter="initialiseIndex(1)"/>
       </i-col>
       <i-col span="3" class="label">规格型号：</i-col>
       <i-col span="4">
-        <i-input clearable v-model="goods_spec" placeholder="请输入规格型号"/>
+        <i-input clearable v-model="goods_spec" placeholder="请输入规格型号" @on-enter="initialiseIndex(1)"/>
       </i-col>
       <i-col span="3" class="label">确认状态：</i-col>
       <i-col span="4">
@@ -29,7 +29,8 @@
       </i-col>
       <i-col span="3" class="label">单据日期：</i-col>
       <i-col span="4">
-        <DatePicker :clearable="false" @on-change="sss" type="daterange" v-model="order_date" placeholder="请输入单据日期" style="width: 200px"></DatePicker>
+        <DatePicker :clearable="false" @on-change="sss" type="daterange" v-model="order_date" placeholder="请输入单据日期"
+                    style="width: 200px"></DatePicker>
       </i-col>
       <i-col span="3" class="label"></i-col>
       <i-col span="4">
@@ -38,7 +39,7 @@
         <i-button type="primary" @click="initialiseIndex(1)">检索</i-button>
       </i-col>
     </row>
-    <row :gutter="16"  >
+    <row :gutter="16">
       <i-col span="3">
         <i-button type="primary" @click="addServiceProviders()">新增</i-button>
       </i-col>
@@ -114,7 +115,7 @@
       <i-form>
         <row :gutter="16">
           <i-col span="11">
-            <i-input   v-model="goods_sn" placeholder="请输入商品编号或者商品名称或助记符"/>
+            <i-input v-model="goods_sn" placeholder="请输入商品编号或者商品名称或助记符"/>
           </i-col>
           <i-col span="1" class="label">
             <i-button @click="searchGoods(0)">检索</i-button>
@@ -142,6 +143,19 @@
         <i-button @click="retrievalDeliverySingle = false">关闭</i-button>
       </div>
     </Modal>
+    <Modal title="生产计划详情" :mask-closable="false" v-model="productionPlanningCurriculumFlag" width=50>
+      <row>
+        <i-table border :height="tableHeight" :columns="columnsCurriculum" :data="Curriculum"></i-table>
+      </row>
+      <row>
+        <i-col span="24" style="text-align: center">
+          <Page :current="pageSon" :page-size="numSon" :total="totalSon" @on-change="pageChangeSon" simple/>
+        </i-col>
+      </row>
+      <div slot="footer">
+        <i-button @click="productionPlanningCurriculumFlag = false">关闭</i-button>
+      </div>
+    </Modal>
     <Spin fix v-show="spinShow">
       <Icon type="load-c" size="30" class="demo-spin-icon-load"></Icon>
       <div>检索中，请稍侯...</div>
@@ -162,6 +176,36 @@
     data() {
       return {
         // <--------------------          基础变量          -------------------->
+        columnsCurriculum: [
+          {
+            title: '机台编码',
+            key: 'mac_id',
+            align: 'center'
+          }, {
+            title: '机台名称',
+            key: 'mac_sn',
+            align: 'center'
+          },
+          {
+            title: '生产开始时间',
+            key: 'plan_begin',
+            align: 'center'
+          },
+          {
+            title: '生产结束时间',
+            key: 'plan_end',
+            align: 'center'
+          },
+          {
+            title: '生产数量',
+            key: 'plan_qty',
+            align: 'center'
+          }
+        ],
+        Curriculum: [],
+        pageSon: 0,
+        numSon: constant.pageSize,
+        totalSon: 0,
         confirm_status: '',
         confirm_statuss: [{
           "code": 1, "name": "未确认"
@@ -293,7 +337,7 @@
                 attrs: {},
                 on: {
                   click: () => {
-                    this.fourCurriculum(params.row.rec_id,0)
+                    this.fourCurriculum(params.row.rec_id, 0)
                   }
                 }
               }, params.row.plan_qty)
@@ -545,6 +589,7 @@
             width: 1
           }
         ],
+        productionPlanningCurriculumFlag: false,
         configNote: [],
         checkRules: {
           sn: [
@@ -566,13 +611,23 @@
       } else {
         this.tableHeight = document.documentElement.clientHeight - 350
         this.tableHeightLis = document.documentElement.clientHeight - 450
+
+        var now = new Date();
+        var nowTime = now.getTime();
+        // var day = now.getDay();
+        var oneDayLong = 24 * 60 * 60 * 1000;
+        var MondayTime = nowTime - (7) * oneDayLong;
+        // var SundayTime = nowTime + (7 - day) * oneDayLong;
+        var monday = new Date(MondayTime);
+        // var sunday = new Date(SundayTime);
+        this.order_date = [monday, now]
         this.initialiseIndex(1)
       }
     },
     methods: {
       //<--------------------          增删改查翻页          -------------------->
       //页面每天添加履历
-      fourCurriculum(plan_id,page) {
+      fourCurriculum(plan_id, page) {
         if (page === 0) {
           this.pageSon = 1
         }
@@ -591,6 +646,7 @@
       },
       //初始化页面
       initialiseIndex(page) {
+        let flag = true
         this.spinShow = true
         this.pageMax = page
         let index = {
@@ -598,39 +654,39 @@
           "page": page
         }
         if (this.order_sn) {
+          flag = false
           index.order_sn = this.order_sn
         }
         if (this.plan_status) {
+          flag = false
           index.is_plan = this.plan_status
         }
+        if (this.goods_spec) {
+          flag = false
+        }
         if (this.confirm_status) {
+          flag = false
           index.is_confirm = this.confirm_status
         }
-        if (this.order_date != ',') {
+        if (this.order_date != ',' && flag) {
           index.start_date = Common.formatDate(this.order_date[0], "yyyy-MM-dd")
           index.end_date = Common.formatDate(this.order_date[1], "yyyy-MM-dd")
         }
         post('/index/Order/getNewOrder', index).then((response) => {
-          if(response === 0){
+          if (response === 0) {
             this.spinShow = false
             // this.totalMax = response.count
             // this.serviceProviders = response.data
             this.totalMax = 0
             this.pageMax = page
             this.serviceProviders = []
-          }else{
+          } else {
             this.spinShow = false
             let list = []
-            if(this.goods_spec){
-              for (let i = 0; i < response.data.length; i++) {
-                if(this.goods_spec == response.data[i].goods_spec){
-                  list.push(response.data[i])
-                }
-              }
+            if (this.goods_spec) {
+              list = this.searchData(this.goods_spec, response.data)
               response.data = list
             }
-            // this.totalMax = response.count
-            // this.serviceProviders = response.data
             this.totalMax = response.data.length
             this.pageMax = page
             this.serviceProviders = response.data.slice(page * this.numMax - this.numMax, page * this.numMax);
@@ -639,12 +695,23 @@
           Common.errNotice(this, err, constant.distributorErrTitle)
         })
       },
-
+      //模糊查询
+      searchData(keyWord, list) {
+        if (!Array.isArray(list) && keyWord !== '') return
+        let arr = []
+        let reg = new RegExp(keyWord, 'i') // 不区分大小写
+        for (let i = 0; i < list.length; i++) {
+          if(list[i].goods_spec){
+            if (list[i].goods_spec.match(reg)) arr.push(list[i])
+          }
+        }
+        return arr
+      },
       pageChange(value) {
         this.initialiseIndex(value)
       },
       addServiceProviders() {
-        post('/index/Company/getCompany').then((response) => {
+        post('/index/Company/getCompany?is_active=1').then((response) => {
           this.orders_config_manage.suppliers = response
         }, err => {
           Common.errNotice(this, err, constant.distributorErrTitle)
@@ -742,6 +809,9 @@
           Common.errNotice(this, err, constant.distributorErrTitle)
         })
       },
+      pageChangeSon(value) {
+        this.fourCurriculum(this.keysRecId, value - 1)
+      },
       //翻页
       pageChangeTetrieval(value) {
         this.searchGoods(value - 1)
@@ -824,7 +894,15 @@
           this.$Notice.error({
             title: '日期跨度不可以超过一月',
           });
-          this.order_date = [new Date(), new Date()]
+          var now = new Date();
+          var nowTime = now.getTime();
+          // var day = now.getDay();
+          var oneDayLong = 24 * 60 * 60 * 1000;
+          var MondayTime = nowTime - (7) * oneDayLong;
+          // var SundayTime = nowTime + (7 - day) * oneDayLong;
+          var monday = new Date(MondayTime);
+          // var sunday = new Date(SundayTime);
+          this.order_date = [monday, now]
         }
       },
     }

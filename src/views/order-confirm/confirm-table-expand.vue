@@ -40,7 +40,6 @@
           <i-col span="4">&nbsp;</i-col>
           <i-col span="7">
             <form-item label="本次生产数量：" prop="counts">
-              <!--              <InputNumber v-model="counts" style="width: 188px"  @blur.native.capture="check_price()"/>-->
               <InputNumber v-model="counts" style="width: 188px" v-on:input="check_price()"/>
             </form-item>
           </i-col>

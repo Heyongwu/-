@@ -50,7 +50,6 @@
           <i-col span="2">&nbsp;</i-col>
           <i-col span="5">
             <form-item label="数量：" prop="sn">
-              <!--              @blur.native.capture="check_price(titleNumber,titlePlan)"-->
               <InputNumber v-model="counts" style="width: 188px"/>
             </form-item>
           </i-col>

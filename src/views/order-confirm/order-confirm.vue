@@ -48,8 +48,7 @@
       <i-table
           border ref="selection" @on-select-all="selectUnit" @on-select-cancel="selectUnit"
           @on-select="selectUnit" @on-select-all-cancel="selectUnit"
-          :height="tableHeight" :columns="columns" :data="serviceProviders"
-      ></i-table>
+          :height="tableHeight" :columns="columns" :data="serviceProviders"></i-table>
     </row>
     <row>
       <i-col span="24" style="text-align: center">
@@ -99,14 +98,13 @@
         <row :gutter="16">
           <i-col span="2">&nbsp;</i-col>
           <i-col span="7">
-            <form-item label="生产结束日期：" prop="order_date">
+            <form-item label="生产结束日期：" prop="end_date">
               <DatePicker type="date" v-model="end_date" placeholder="请选择生产结束日期"></DatePicker>
             </form-item>
           </i-col>
           <i-col span="4">&nbsp;</i-col>
           <i-col span="7">
             <form-item label="本次生产数量：" prop="counts">
-              <!--              <InputNumber v-model="counts" style="width: 188px"  @blur.native.capture="check_price()"/>-->
               <InputNumber v-model="counts" style="width: 188px" v-on:input="check_price()"/>
             </form-item>
           </i-col>
@@ -388,8 +386,17 @@
         return
       } else {
         this.tableHeight = document.documentElement.clientHeight - 350
-        this.initialiseIndex(1)
 
+        var now = new Date();
+        var nowTime = now.getTime();
+        // var day = now.getDay();
+        var oneDayLong = 24 * 60 * 60 * 1000;
+        var MondayTime = nowTime - (7) * oneDayLong;
+        // var SundayTime = nowTime + (7 - day) * oneDayLong;
+        var monday = new Date(MondayTime);
+        // var sunday = new Date(SundayTime);
+        this.order_date = [monday, now]
+        this.initialiseIndex(1)
       }
     },
     methods: {
@@ -397,21 +404,27 @@
       //初始化页面
       initialiseIndex(page) {
         this.spinShow = true
-        this.pageMax = page
+        let flag = true
         let index = {
           "num": this.numMax,
           "page": page
         }
         if (this.order_sn) {
+          flag = false
           index.order_sn = this.order_sn
         }
         if (this.plan_status) {
+          flag = false
           index.is_plan = this.plan_status
         }
+        if (this.goods_spec) {
+          flag = false
+        }
         if (this.confirm_status) {
+          flag = false
           index.is_confirm = this.confirm_status
         }
-        if (this.order_date != ',') {
+        if (this.order_date != ',' && flag) {
           index.start_date = Common.formatDate(this.order_date[0], "yyyy-MM-dd")
           index.end_date = Common.formatDate(this.order_date[1], "yyyy-MM-dd")
         }
@@ -426,12 +439,8 @@
           }else{
             this.spinShow = false
             let list = []
-            if(this.goods_spec){
-              for (let i = 0; i < response.data.length; i++) {
-                if(this.goods_spec == response.data[i].goods_spec){
-                  list.push(response.data[i])
-                }
-              }
+            if (this.goods_spec) {
+              list = this.searchData(this.goods_spec,response.data)
               response.data = list
             }
             this.totalMax = response.data.length
@@ -441,6 +450,18 @@
         }, err => {
           Common.errNotice(this, err, constant.distributorErrTitle)
         })
+      },
+      //模糊查询
+      searchData (keyWord, list) {
+        if (!Array.isArray(list) && keyWord !== '') return
+        let arr = []
+        let reg = new RegExp(keyWord, 'i') // 不区分大小写
+        for (let i = 0; i < list.length; i++) {
+          if(list[i].goods_spec){
+            if (list[i].goods_spec.match(reg)) arr.push(list[i])
+          }
+        }
+        return arr
       },
       pageChange(value) {
         this.initialiseIndex(value)
@@ -681,7 +702,15 @@
           this.$Notice.error({
             title: '日期跨度不可以超过一月',
           });
-          this.order_date = [new Date(), new Date()]
+          var now = new Date();
+          var nowTime = now.getTime();
+          // var day = now.getDay();
+          var oneDayLong = 24 * 60 * 60 * 1000;
+          var MondayTime = nowTime - (7) * oneDayLong;
+          // var SundayTime = nowTime + (7 - day) * oneDayLong;
+          var monday = new Date(MondayTime);
+          // var sunday = new Date(SundayTime);
+          this.order_date = [monday, now]
         }
       },
     }

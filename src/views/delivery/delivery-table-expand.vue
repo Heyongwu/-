@@ -24,15 +24,13 @@
         </row>
         <row>
           <i-col span="1">
-            <i-button @click="searchOrder(1)" type="primary" :disabled="preservationDisabled == false">导入订单</i-button>
+            <i-button @click="openSeacher()" type="primary" :disabled="preservationDisabled == false">导入订单</i-button>
           </i-col>
           <i-col span="1" style="margin-left: 35px">
             <i-button v-if="preservationDisabled == false" type="info" @click="commodityConfirmation">打印条码</i-button>
-<!--            <i-button  type="info" @click="commodityConfirmation">打印条码</i-button>-->
           </i-col>
           <i-col span="1" style="margin-left: 35px">
             <i-button v-if="preservationDisabled == false" type="warning" @click="commoditySongHuodan">打印送货单</i-button>
-<!--            <i-button  type="warning" @click="commoditySongHuodan">打印送货单</i-button>-->
           </i-col>
         </row>
         <row :gutter="16" style="margin-bottom: 20px;display:flex;font-size: 15px">
@@ -40,7 +38,6 @@
             <!--            @on-current-change="deliveryChecked"-->
             <i-table border highlight-row ref="currentRowTable" v-if="preservationDisabled"
                      @on-row-click="selectUnit1"
-                     :row-class-name="rowClassName"
                      :height="tableHeight2" :columns="deliveryColumns" :data="deliveryNote"></i-table>
             <i-table border highlight-row ref="currentRowTable" v-if="preservationDisabled == false"
                      @on-select-all="selectAlls" @on-select-cancel="selectAlls"
@@ -71,7 +68,8 @@
       </i-form>
       <div slot="footer">
         <i-button @click="deliverySingle = false">关闭</i-button>
-        <i-button v-if="preservationDisabled" type="primary" @click="addSaveServiceProvider" :disabled="detailsFlag" v-preventReClick>
+        <i-button v-if="preservationDisabled" type="primary" @click="addSaveServiceProvider" :disabled="detailsFlag"
+                  v-preventReClick>
           保存
         </i-button>
       </div>
@@ -90,12 +88,13 @@
           <i-col span="2" class="label">
             日期：
           </i-col>
-          <i-col span="3">
-            <DatePicker type="date" v-model="order_date" placeholder="请选择日期"></DatePicker>
+          <i-col span="4">
+            <DatePicker v-model="order_date" :clearable="false" @on-change="sss" type="daterange"
+                        placeholder="请选择日期"></DatePicker>
           </i-col>
           <i-col span="2"></i-col>
           <i-col span="2">
-            <i-button @click="searchOrder(1)">检索</i-button>
+            <i-button @click="searchOrder(1,false)">检索</i-button>
           </i-col>
           <i-col span="8"></i-col>
         </row>
@@ -128,6 +127,7 @@
   import BigImg from '@/views/delivery/delivery-image-small';
   import {constant} from '@/constant/constant'
   import Cookies from 'js-cookie'
+  import QRCode from 'qrcode'
 
   export default {
     props: {
@@ -149,10 +149,11 @@
         isSyncFlag: true,
         isSyncShow: true,
         clickBj: false,
-        singleCOUNT:0,
+        singleCOUNT: 0,
         addTotalList: {
           "info": [],
         },
+        allGetSeachOrderList: [],
         indexClick: -1,
         appendSuccessAllList: [],
         singleList: {},
@@ -162,7 +163,7 @@
         urls: '',
         order_sn: '',
         goods_spec: '',
-        order_date: '',
+        order_date: [new Date(), new Date()],
         detailsFlag: false,
         tedayNum: 0,
         countNumber: 0,
@@ -209,25 +210,25 @@
             title: '门幅',
             key: 'goods_width',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '颜色',
             key: 'goods_color',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '布纹',
             key: 'goods_type',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '单位',
             key: 'goods_unit',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '订单米数',
@@ -248,16 +249,15 @@
           },
           {
             title: '单卷数量',
-            key: 'song_single_qty',
+            key: 'song_qty',
             align: 'center',
             render: (h, params) => {
               let _this = this;
-
               return h('div', [
                 h(
                   "InputNumber", {
                     props: {
-                      value: params.row.song_single_qty,
+                      value: params.row.song_qty,
                       transfer: true,  //select不受body显示，以免显示不出来
                       disabled: params.row.fenjuan ? true : false,
                     },
@@ -268,7 +268,7 @@
                       // 编辑数量的时候,触发的事件
                       'on-change': e => {
                         this.clickBj = true
-                        params.row.song_single_qty = e
+                        params.row.song_qty = e
                         _this.deliveryNote[params.index] = params.row
                         _this.updateData() // 改变的时候触发一下改变数据时事件,这样只要编辑了就会获取里面的值
                         _this.updateSingleNumber() // 单卷数据计算
@@ -328,57 +328,35 @@
           {
             title: '门幅',
             key: 'goods_width',
-            align: 'center',
-            width:90
+            align: 'center'
           },
           {
             title: '颜色',
             key: 'goods_color',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '布纹',
             key: 'goods_type',
-            align: 'center',
-            width:90
+            align: 'center'
           },
           {
             title: '单位',
             key: 'goods_unit',
-            align: 'center',
-            width:90
-          },
-          {
-            title: '订单米数',
-            key: 'amount_qty',
-            align: 'center',
-            // width:65
-          },
-          {
-            title: '可送货数量',
-            key: 'depot_qty',
-            align: 'center',
-            // width:65
-          },
-          {
-            title: '待送货数量',
-            key: 'Dy',
-            align: 'center',
-            // width:65
+            align: 'center'
           },
           {
             title: '单卷数量',
-            key: 'song_single_qty',
+            key: 'song_qty',
             align: 'center',
             render: (h, params) => {
               let _this = this;
-
               return h('div', [
                 h(
                   "InputNumber", {
                     props: {
-                      value: params.row.song_single_qty,
+                      value: params.row.song_qty,
                       transfer: true,  //select不受body显示，以免显示不出来
                       disabled: params.row.fenjuan ? true : false,
                     },
@@ -389,7 +367,7 @@
                       // 编辑数量的时候,触发的事件
                       'on-change': e => {
                         this.clickBj = true
-                        params.row.song_single_qty = e
+                        params.row.song_qty = e
                         _this.deliveryNote[params.index] = params.row
                         _this.updateData() // 改变的时候触发一下改变数据时事件,这样只要编辑了就会获取里面的值
                       }
@@ -445,25 +423,25 @@
             title: '门幅',
             key: 'goods_width',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '颜色',
             key: 'goods_color',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '布纹',
             key: 'goods_type',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '单位',
             key: 'goods_unit',
             align: 'center',
-            width:90
+            width: 90
           },
           {
             title: '订单米数',
@@ -550,6 +528,43 @@
           return false;
         }
       },
+      sss() {
+        let start_date = Common.formatDate(this.order_date[0], "yyyy-MM-dd")
+        let end_date = Common.formatDate(this.order_date[1], "yyyy-MM-dd")
+        var day1 = new Date(start_date);
+        var day2 = new Date(end_date);
+        var pL = (day2 - day1) / (1000 * 60 * 60 * 24)
+        if (pL > 7) {
+          this.$Notice.error({
+            title: '日期跨度不可以超过一周',
+          });
+          var now = new Date();
+          this.order_date = [now, now]
+        }
+      },
+
+      //打印方法
+      qrcode(contractValue) {
+        let _this = this
+        _this.urls = ''
+        const opts = {
+          errorCorrectionLevel: 'H',
+          type: 'image/jpeg',
+          rendererOpts: {
+            quality: 0.3
+          }
+        }
+        QRCode.toDataURL(contractValue, opts, function (err, url) {
+          if (err) throw err
+          _this.urls = url
+        })
+        return this.urls
+      },
+      openSeacher() {
+        this.order_sn = ''
+        this.goods_spec = ''
+        this.searchOrder(1, false)
+      },
       //新增保存
       addSaveServiceProvider() {
         if (Common.isNullOrUndefined(this.addAlls.song_person) == false) {
@@ -595,20 +610,20 @@
             listLarge.song_num = listSamll[i].song_num
             listLarge.song_total_num = listSamll[i].song_total_num
             listLarge.song_total_qty = listSamll[i].song_total_qty
-            listLarge.song_person =  this.addAlls.song_person
+            listLarge.song_person = this.addAlls.song_person
             listLarge.song_date = Common.formatDate(this.addAlls.song_date, "yyyy-MM-dd")
-            listLarge.wuliu_sn =  this.addAlls.wuliu_sn
+            listLarge.wuliu_sn = this.addAlls.wuliu_sn
             small.rec_sn = ''
-            small.song_qty = listSamll[i].song_single_qty
+            small.song_qty = listSamll[i].song_qty
             small.depot_qty = listSamll[i].depot_qty
             listLarge.data.push(small)
             listAll.info.push(listLarge)
           } else {
             let Flag = true
             for (let j = 0; j < listAll.info.length; j++) {
-              if (listSamll[i].goods_spec === listAll.info[j].goods_spec) {
+              if (listSamll[i].goods_spec === listAll.info[j].goods_spec && listSamll[i].order_sn === listAll.info[j].order_sn) {
                 small.rec_sn = ''
-                small.song_qty = listSamll[i].song_single_qty
+                small.song_qty = listSamll[i].song_qty
                 small.depot_qty = listSamll[i].depot_qty
                 listAll.info[j].data.push(small)
                 Flag = false
@@ -638,70 +653,98 @@
               listLarge.song_date = Common.formatDate(this.addAlls.song_date, "yyyy-MM-dd")
               listLarge.wuliu_sn = this.addAlls.wuliu_sn
               small.rec_sn = ''
-              small.song_qty = listSamll[i].song_single_qty
+              small.song_qty = listSamll[i].song_qty
               small.depot_qty = listSamll[i].depot_qty
               listLarge.data.push(small)
               listAll.info.push(listLarge)
             }
           }
         }
-        for (let i = 0; i < listAll.info.length; i++) {
-          for (let j = 0; j < listAll.info[i].data.length; j++) {
-            listAll.info[i].data[j].rec_sn = Common.generationNumber(this.tedayNum)
-            this.tedayNum++;
-          }
-        }
-        if (this.isPreservation(listAll)) {
-          for (let i = 0; i < listAll.info.length; i++) {
-            let total = 0
-            for (let j = 0; j < listAll.info[i].data.length; j++) {
-              total += parseFloat(listAll.info[i].data[j].song_qty)
+        post('/index/Order/getRowno').then((responseRown) => {
+          //判断保存的时候传来的数量与是否对的上
+          if (parseInt(responseRown.song_rowno) === parseInt(this.tedayNum)) {
+            for (let i = 0; i < listAll.info.length; i++) {
+              for (let j = 0; j < listAll.info[i].data.length; j++) {
+                listAll.info[i].data[j].rec_sn = Common.generationNumber(this.tedayNum)
+                this.tedayNum++;
+              }
             }
-            listAll.info[i].song_total_qty = total
-            listAll.info[i].song_total_num = listAll.info[i].data.length
-            let totalCount = parseFloat(total) + parseFloat(listAll.info[i].receiv_qty) + parseFloat(listAll.info[i].deliver_qty)
-            if (totalCount > listAll.info[i].amount_qty * 1.2) {
+          } else {
+            //对不上的话使用重新获取的数量
+            this.tedayNum = responseRown.song_rowno
+            for (let i = 0; i < listAll.info.length; i++) {
+              for (let j = 0; j < listAll.info[i].data.length; j++) {
+                listAll.info[i].data[j].rec_sn = Common.generationNumber(this.tedayNum)
+                this.tedayNum++;
+              }
+            }
+          }
+          if (this.isPreservation(listAll)) {
+            for (let i = 0; i < listAll.info.length; i++) {
+              let total = 0
+              for (let j = 0; j < listAll.info[i].data.length; j++) {
+                total += parseFloat(listAll.info[i].data[j].song_qty)
+              }
+              listAll.info[i].song_total_qty = total
+              listAll.info[i].song_total_num = listAll.info[i].data.length
+              let totalCount = parseFloat(total) + parseFloat(listAll.info[i].receiv_qty) + parseFloat(listAll.info[i].deliver_qty)
+              if (totalCount > listAll.info[i].amount_qty * 1.2) {
+                this.$Notice.error({
+                  title: '保存异常',
+                  desc: "采购单号：" + listAll.info[i].order_sn + "   " + "型号：" + listAll.info[i].goods_spec + " 送货数量大于采购订单数量的限定超额，请更换采购订单或者请作废无法送货的送货条码。"
+                });
+                return
+              }
+            }
+            if (listAll.info.length == 0) {
               this.$Notice.error({
-                title: '保存异常',
-                desc: "型号" + listAll.info[i].goods_spec + " 送货数量大于采购订单数量的限定超额，请更换采购订单或者请作废无法送货的送货条码。"
+                title: '请选择商品',
               });
               return
             }
-          }
-          if (listAll.info.length == 0) {
-            this.$Notice.error({
-              title: '请选择商品',
-            });
-            return
-          }
-          post('/index/Depot/outDepot', listAll).then((response) => {
-            if (parseInt(response.code) === 1) {
-              this.$Notice.success({
-                title: '保存送货单',
-                desc: this.addAlls.wuliu_sn + response.msg,
-              });
-              this.preservationDisabled = false
-              this.deliveryColumns = this.deliveryColumns2
-              let tedayNum = parseInt(this.tedayNum - this.deliveryNote.length)
-              for (let i = 0; i < this.deliveryNote.length; i++) {
-                this.deliveryNote[i].rec_sn = Common.generationNumber(tedayNum)
-                tedayNum++;
+
+            post('/index/Depot/outDepot', listAll).then((response) => {
+              if (parseInt(response.code) === 1) {
+                this.$Notice.success({
+                  title: '保存送货单',
+                  desc: this.addAlls.wuliu_sn + response.msg,
+                });
+
+                this.preservationDisabled = false
+                this.deliveryColumns = this.deliveryColumns2
+                // let tedayNum = parseInt(this.tedayNum - this.deliveryNote.length)
+                // for (let i = 0; i < this.deliveryNote.length; i++) {
+                //   this.deliveryNote[i].rec_sn = Common.generationNumber(tedayNum)
+                //   tedayNum++;
+                // }
+                let index = {
+                  "num": 150,
+                  "page": 1,
+                  "count": 0,
+                  "wuliu_sn": this.addAlls.wuliu_sn,
+                  "status": 0
+                }
+                post('/index/Depot/getNewWuliu', index).then((responseWuliu) => {
+                  this.deliveryNote = responseWuliu.data
+                })
+              } else {
+                this.$Notice.error({
+                  title: '保存送货单',
+                  desc: this.addAlls.wuliu_sn + response.msg,
+                });
               }
-            } else {
-              this.$Notice.error({
-                title: '保存送货单',
-                desc: this.addAlls.wuliu_sn + response.msg,
-              });
-            }
-          }, err => {
-            Common.errNotice(this, err, constant.distributorErrTitle)
-          })
-        } else {
-          this.$Notice.error({
-            title: '商品单卷数量有误',
-            desc: '请输入所有商品单卷数量！',
-          });
-        }
+            }, err => {
+              Common.errNotice(this, err, constant.distributorErrTitle)
+            })
+          } else {
+            this.$Notice.error({
+              title: '商品单卷数量有误',
+              desc: '请输入所有商品单卷数量！',
+            });
+          }
+        }, err => {
+          Common.errNotice(this, err, constant.distributorErrTitle)
+        })
       },
       //删除
       removeDelivery(index, row) {
@@ -722,7 +765,7 @@
       },
       //选择商品翻页
       pageChangeTetrieval(value) {
-        this.searchOrder(value)
+        this.searchOrder(value, true)
       },
       //<--------------------          清取消和存储参数的modal          -------------------->
       //新增跳转
@@ -730,6 +773,7 @@
         this.preservationDisabled = true
         this.deliverySingle = true
         this.detailsFlag = false
+        this.singleCOUNT = 0
         this.title = '新增送货单'
         this.deliveryColumns = this.deliveryColumns1
         Cookies.set("isFlage", false)
@@ -763,7 +807,7 @@
       //<--------------------          逻辑          -------------------->
       //将选中的订单添加到送货单表格中
       appendDeliveryList(val) {
-        if (parseFloat(val.deliver_qty) + parseFloat(val.receiv_qty) > ( parseFloat(val.amount_qty)  * 1.2 ) ) {
+        if (parseFloat(val.deliver_qty) + parseFloat(val.receiv_qty) > (parseFloat(val.amount_qty) * 1.2)) {
           this.$Notice.error({
             title: '商品添加',
             desc: '在途数量和已确认数量总和超出订单米数限定。',
@@ -829,7 +873,7 @@
           list.Dy = this.deliveryNote[this.indexClick].Dy
           list.song_num = this.deliveryNote[this.indexClick].song_num
           list.song_total_num = this.deliveryNote[this.indexClick].song_total_num
-          list.song_single_qty = this.singleVolumeNumber
+          list.song_qty = this.singleVolumeNumber
           this.deliveryNote.splice(this.indexClick + 1, 0, list)
         }
         this.deliveryNote.splice(this.indexClick, 1)
@@ -837,6 +881,7 @@
           title: '商品分卷',
           desc: '分卷成功！',
         });
+        this.updateSingleNumber()
       },
       //判断保存是否可用点击
       isPreservation(list) {
@@ -873,21 +918,24 @@
         }
       },
       //检索商品
-      searchOrder(page) {
+      searchOrder(page, isFlag) {
         this.spinShow = true
         this.retrievalDeliveryNote = []
         this.page = page
         let index = {}
+        let flag = true
         if (this.order_sn) {
           index.order_sn = this.order_sn
+          flag = false
         }
-        if (this.order_date) {
-          index.order_date = this.order_date
-        }
+
         if (this.goods_spec) {
+          flag = false
           index.goods_spec = this.goods_spec
         }
-        post('/index/Order/searchOrder', index).then((response) => {
+
+        if (isFlag) {
+          let response = this.allGetSeachOrderList
           this.retrievalDeliverySingle = true
           if (response.length == 0) {
             this.retrievalDeliveryNote = response.data
@@ -899,8 +947,8 @@
               response.data[i].Dy = Dy.toFixed(2)
               response.data[i].song_num = 0
               response.data[i].song_total_num = 0
-              response.data[i].song_single_qty = 0
-              response.data[i].order_date =  response.data[i].order_date.substring(0, 10);
+              response.data[i].song_qty = 0
+              response.data[i].order_date = response.data[i].order_date.substring(0, 10);
             }
             this.retrievalDeliveryNote = response.data.slice(page * constant.pageSize - constant.pageSize, page * constant.pageSize);
             this.total = response.data.length
@@ -909,12 +957,44 @@
             }
           }
           this.spinShow = false
-        }, err => {
-          Common.errNotice(this, err, constant.distributorErrTitle)
-        })
+        } else {
+          if (flag) {
+            if (Common.isNullOrUndefined(this.order_date[0])) {
+              index.start_date = Common.formatDate(this.order_date[0], "yyyy-MM-dd")
+              index.end_date = Common.formatDate(this.order_date[1], "yyyy-MM-dd")
+            }
+          }
+          post('/index/Order/searchOrder', index).then((response) => {
+            this.allGetSeachOrderList = response
+            this.retrievalDeliverySingle = true
+            if (response.length == 0) {
+              this.retrievalDeliveryNote = response.data
+              this.tedayNum = response.song_rowno
+              this.total = 1
+            } else {
+              for (let i = 0; i < response.data.length; i++) {
+                let Dy = response.data[i].amount_qty - response.data[i].deliver_qty - response.data[i].receiv_qty
+                response.data[i].Dy = Dy.toFixed(2)
+                response.data[i].song_num = 0
+                response.data[i].song_total_num = 0
+                response.data[i].song_qty = 0
+                response.data[i].order_date = response.data[i].order_date.substring(0, 10);
+              }
+              this.retrievalDeliveryNote = response.data.slice(page * constant.pageSize - constant.pageSize, page * constant.pageSize);
+              this.total = response.data.length
+              if (this.tedayNum === 0) {
+                this.tedayNum = response.song_rowno
+              }
+            }
+            this.spinShow = false
+          }, err => {
+            Common.errNotice(this, err, constant.distributorErrTitle)
+          })
+        }
       },
       //保存成功 当勾选完毕取值
       selectAlls(selection) {
+        console.log(JSON.stringify(selection))
         this.appendSuccessAllList = selection
       },
       //单击某个条目改变当前状态
@@ -941,8 +1021,10 @@
         } else {
           for (let i = 0; i < this.appendSuccessAllList.length; i++) {
             this.appendSuccessAllList[i].img = this.qrcode(this.appendSuccessAllList[i].rec_sn)
-            this.appendSuccessAllList[i].maker_date = this.newDate
-            this.appendSuccessAllList[i].song_qty = this.appendSuccessAllList[i].song_single_qty
+            this.appendSuccessAllList[i].maker_date = Common.formatDate(new Date(), "yyyyMMdd")
+            this.appendSuccessAllList[i].song_qty = this.appendSuccessAllList[i].song_qty
+            this.appendSuccessAllList[i].company_name = Cookies.get("company_name")
+            this.appendSuccessAllList[i].song_date = Common.formatDate(this.addAlls.song_date, "yyyy-MM-dd");
           }
           Common.clickPrint(this.appendSuccessAllList)
         }
@@ -962,10 +1044,10 @@
             let listsmall = []
             let listssmall = {}
             if (list.length == 0) {
-              lists.IMG = this.qrcode(o[i].wuliu_sn)
-              lists.PuCode = o[i].wuliu_sn
+              lists.IMG = this.qrcode(this.addAlls.wuliu_sn)
+              lists.PuCode = this.addAlls.wuliu_sn
               lists.dDate = o[i].order_date
-              lists.nowdate = Common.formatDate(new Date(), "yyyy:MM:hh");
+              lists.nowdate = Common.formatDate(new Date(), "yyyy-MM-dd");
               lists.shPerson = o[i].song_person
               lists.shDate = o[i].song_date
 
@@ -973,14 +1055,31 @@
               listssmall.cInvName = o[i].goods_name
               listssmall.cComUnitName = o[i].goods_unit
               listssmall.cInvStd = o[i].goods_spec
-              listssmall.iQuantity = o[i].song_single_qty
+              listssmall.iQuantity = o[i].song_qty
               listssmall.OrderSn = o[i].order_sn
               listsmall.push(listssmall)
               lists.data = listsmall
               list.push(lists)
             } else {
-              for (let j = 0; j < list.length; j++) {
-                list[j].data[0].iQuantity = parseFloat(o[i].song_single_qty) + parseFloat(list[j].data[0].iQuantity)
+              let FlagSmall = false
+              let KK = 0
+              for (let j = 0; j < list[0].data.length; j++) {
+                if( o[i].goods_spec == list[0].data[j].cInvStd) {
+                  FlagSmall = true
+                  KK = j
+                  break;
+                }
+              }
+              if(FlagSmall){
+                list[0].data[KK].iQuantity = parseFloat(o[i].song_qty) + parseFloat(list[0].data[KK].iQuantity)
+              }else{
+                listssmall.cInvCode = o[i].goods_sn
+                listssmall.cInvName = o[i].goods_name
+                listssmall.cComUnitName = o[i].goods_unit
+                listssmall.cInvStd = o[i].goods_spec
+                listssmall.iQuantity = o[i].song_qty
+                listssmall.OrderSn = o[i].order_sn
+                list[0].data.push(listssmall)
               }
             }
           }
@@ -988,11 +1087,11 @@
         }
       },
 
-      updateSingleNumber(){
+      updateSingleNumber() {
         this.singleCOUNT = 0
         let list = this.deliveryNote
         for (let i = 0; i < list.length; i++) {
-            this.singleCOUNT += list[i].song_single_qty
+          this.singleCOUNT += parseFloat(list[i].song_qty)
         }
       }
     }

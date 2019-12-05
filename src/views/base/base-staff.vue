@@ -209,6 +209,7 @@
             align: 'center'
           }
         ],
+        is_active: 1,
         page: 0,
         num: constant.pageSize,
         total: 0,
@@ -393,7 +394,7 @@
         }
       },
       selectAllCompany(){
-        post('/index/Company/getCompany').then((response) => {
+        post('/index/Company/getCompany?is_active=' + this.is_active).then((response) => {
           this.staff.suppliers =response
           //   [{
           //   "company_id": 1,

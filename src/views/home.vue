@@ -109,7 +109,7 @@
     data() {
       return {
         note: {
-          backgroundImage: 'url(' + require('../static/images/bg.jpg') + ')',
+          backgroundImage: 'url(' + require('../static/bg.jpg') + ')',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center center',
           backgroundSize: 'cover',
